@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        File Dashboard
+    </title>
+    <link rel="shortcut icon" href="/images/company.png" type="image/png">
+    <!-- GOOGLE FONT -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+        rel="stylesheet">
+    <!-- BOXICONS -->
+    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+    <!-- APP CSS -->
+    <link rel="stylesheet" href="./css/grid.css">
+    <link rel="stylesheet" href="./css/app.css">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="./images/company-large.png" alt="Company Logo"/>
+            
+            <div class="sidebar-close" id="sidebar-close">
+                <i class='bx bx-left-arrow-alt'></i>
+            </div>
+        </div>
+        <div class="sidebar-user">
+            <div class="sidebar-user-info">
+                <img src="./images/user-image-2.png" alt="User picture" class="profile-image">
+                <div class="sidebar-user-name">
+                    Holographic
+                </div>
+            </div>
+            <button class="btn btn-outline">
+                <i class='bx bx-log-out bx-flip-horizontal'></i>
+            </button>
+        </div>
+        <!-- SIDEBAR MENU -->
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#" class="active">
+                    <i class='bx bx-home'></i>
+                    <span>dashboard</span>
+                </a>
+            </li>
+
+
+            <li>
+                <a href="#">
+                    <i class='bx bx-hdd'></i>
+                    <span>Files</span>
+                </a>
+            </li>
+
+
+            <li class="sidebar-submenu">
+                <a href="#" class="sidebar-menu-dropdown">
+                    <i class='bx bx-user-circle'></i>
+                    <span>account</span>
+                    <div class="dropdown-icon"></div>
+                </a>
+                <ul class="sidebar-menu sidebar-menu-dropdown-content">
+                    <li>
+                        <a href="#">
+                            edit profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            account settings
+                        </a>
+                    </li>
+                </ul>
+
+
+            <li class="sidebar-submenu">
+                <a href="#" class="sidebar-menu-dropdown">
+                    <i class='bx bx-cog'></i>
+                    <span>settings</span>
+                    <div class="dropdown-icon"></div>
+                </a>
+                <ul class="sidebar-menu sidebar-menu-dropdown-content">
+                    <li>
+                        <a href="#" class="darkmode-toggle" id="darkmode-toggle">
+                            darkmode
+                            <span class="darkmode-switch"></span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <!-- END SIDEBAR MENU -->
+    </div>
+    <!-- END SIDEBAR -->
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <div class="main-header">
+            <div class="mobile-toggle" id="mobile-toggle">
+                <i class='bx bx-menu-alt-right'></i>
+            </div>
+            <div class="main-title">
+                dashboard
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="row">
+                <div class="col-3 col-md-6 col-sm-12">
+                    <div class="box box-hover">
+                        <!-- CARD 1 -->
+                        <div class="counter">
+                            <div class="counter-title">
+                                total files
+                            </div>
+                            <div class="counter-info">
+                                <div class="counter-count">
+                                    3
+                                </div>
+                                <i class='bx bx-data'></i>
+                            </div>
+                        </div>
+                        <!-- END CARD 1 -->
+                    </div>
+                </div>
+                <div class="col-3 col-md-6 col-sm-12">
+                    <div class="box box-hover">
+                        <!-- CARD 2 -->
+                        <div class="counter">
+                            <div class="counter-title">
+                                total size
+                            </div>
+                            <div class="counter-info">
+                                <div class="counter-count">
+                                    449|MB
+                                </div>
+                                <i class='bx bx-memory-card' ></i>
+                            </div>
+                        </div>
+                        <!-- END CARD 2 -->
+                    </div>
+                </div>
+                <div class="col-3 col-md-6 col-sm-12">
+                    <div class="box box-hover">
+                        <!-- CARD 3 -->
+                        <div class="counter">
+                            <div class="counter-title">
+                                total requests
+                            </div>
+                            <div class="counter-info">
+                                <div class="counter-count">
+                                    257
+                                </div>
+                                <i class='bx bx-sort'></i>
+                            </div>
+                        </div>
+                        <!-- END CARD 3 -->
+                    </div>
+                </div>
+                <div class="col-3 col-md-6 col-sm-12">
+                    <div class="box box-hover">
+                        <!-- CARD 4 -->
+                        <div class="counter">
+                            <div class="counter-title">
+                                total users
+                            </div>
+                            <div class="counter-info">
+                                <div class="counter-count">
+                                    3
+                                </div>
+                                <i class='bx bx-user'></i>
+                            </div>
+                        </div>
+                        <!-- END CARD 4 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-3 col-md-6 col-sm-12">
+                    <!-- LARGE FILES -->
+                    <div class="box f-height">
+                        <div class="box-header">
+                            largest files
+                        </div>
+                        <div class="box-body">
+                            <ul class="product-list">
+                                <li class="product-list-item">
+                                    <div class="item-info">
+
+                                        <div class="item-name">
+                                            <div class="product-name">setup.exe</div>
+                                            <div class="text-second">Executable</div>
+                                        </div>
+                                    </div>
+                                    <div class="item-sale-info">
+                                        <div class="text-second">size</div>
+                                        <div class="product-sales">378|MB</div>
+                                    </div>
+                                </li>
+                                <li class="product-list-item">
+                                    <div class="item-info">
+
+                                        <div class="item-name">
+                                            <div class="product-name">nmap.exe</div>
+                                            <div class="text-second">Executable</div>
+                                        </div>
+                                    </div>
+                                    <div class="item-sale-info">
+                                        <div class="text-second">size</div>
+                                        <div class="product-sales">54|MB</div>
+                                    </div>
+                                </li>
+                                <li class="product-list-item">
+                                    <div class="item-info">
+
+                                        <div class="item-name">
+                                            <div class="product-name">report.png</div>
+                                            <div class="text-second">Image</div>
+                                        </div>
+                                    </div>
+                                    <div class="item-sale-info">
+                                        <div class="text-second">size</div>
+                                        <div class="product-sales">17|MB</div>
+                                    </div>
+                                </li>
+
+
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- LARGE FILES -->
+                </div>
+                <div class="col-4 col-md-6 col-sm-12">
+                    <!-- EXTENSION CHART -->
+                    <div class="box f-height">
+                        <div class="box-header">
+                            File Extensions
+                        </div>
+                        <div class="box-body">
+                            <div id="category-chart"></div>
+                        </div>
+                    </div>
+                    <!-- END EXTENSION CHART -->
+                </div>
+                <div class="col-5 col-md-12 col-sm-12">
+                    <!-- USAGE CHART -->
+                    <div class="box f-height">
+                        <div class="box-header">
+                            API Requests
+                        </div>
+                        <div class="box-body">
+                            <div id="customer-chart"></div>
+                        </div>
+                    </div>
+                    <!-- END USAGE CHART -->
+                </div>
+                <div class="col-12">
+                    <!-- ACTIONS TABLE -->
+                    <div class="box">
+                        <div class="box-header">
+                            recent actions
+                        </div>
+                        <div class="box-body overflow-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>File</th>
+                                        <th>User</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                        <th>Response</th>
+                                        <th>Source IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>nmap.exe</td>
+                                        <td>
+                                            <div class="order-owner">
+                                                <img src="./images/user-image-2.png" alt="user image">
+                                                <span>Holographic</span>
+                                            </div>
+                                        </td>
+                                        <td>2023-05-05</td>
+                                        <td>
+                                            <span class="order-status order-ready">
+                                                Download
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="payment-status payment-paid">
+                                                <div class="dot"></div>
+                                                <span>Success</span>
+                                            </div>
+                                        </td>
+                                        <td>127.0.0.1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>report.png</td>
+                                        <td>
+                                            <div class="order-owner">
+                                                <img src="./images/user-image-2.png" alt="user image">
+                                                <span>Other Dude</span>
+                                            </div>
+                                        </td>
+                                        <td>2023-05-05</td>
+                                        <td>
+                                            <span class="order-status order-shipped">
+                                                Upload
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="payment-status payment-paid">
+                                                <div class="dot"></div>
+                                                <span>Success</span>
+                                            </div>
+                                        </td>
+                                        <td>127.0.0.1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>setup.exe</td>
+                                        <td>
+                                            <div class="order-owner">
+                                                <img src="./images/user-image-3.png" alt="user image">
+                                                <span>Some Wooman</span>
+                                            </div>
+                                        </td>
+                                        <td>2023-05-05</td>
+                                        <td>
+                                            <span class="order-status order-deleted">
+                                                Delete
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="payment-status payment-pending">
+                                                <div class="dot"></div>
+                                                <span>Failed</span>
+                                            </div>
+                                        </td>
+                                        <td>127.0.0.1</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- END ACTIONS TABLE -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MAIN CONTENT -->
+
+    <div class="overlay"></div>
+
+    <!-- SCRIPT -->
+    <!-- APEX CHART -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- APP JS -->
+    <script src="./js/app.js"></script>
+
+</body>
+
+</html>
