@@ -1,0 +1,50 @@
+  button {
+      backdrop-filter: blur(25px);
+      
+      margin-left: 0px;
+      height: 2.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--light-color);
+      background: none;
+      border: 1px solid #dbdbdb;
+      box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      transition: transform 150ms ease;
+  }
+
+   
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+      backdrop-filter: blur(25px);
+      
+      margin-left: 0px;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--light-color);
+      background: none;
+      border: 1px solid #dbdbdb;
+      box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      transition: transform 150ms ease;
+    }
+
+    /*
+    button {
+        background-color: black;
+    }
+
+    input[type="file"]::-webkit-file-upload-button {
+        background-color: black;
+    }
