@@ -8,6 +8,9 @@
     <title>
         File Dashboard
     </title>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@11.0.0"></script>
+
     <link rel="shortcut icon" href="/images/company.png" type="image/png">
     <!-- GOOGLE FONT -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -19,15 +22,60 @@
     <!-- APP CSS -->
     <link rel="stylesheet" href="./css/grid.css">
     <link rel="stylesheet" href="./css/app.css">
+
+    <!-- SCRIPTS -->
+    <script>
+        const { Client, Account, ID, Storage } = Appwrite;
+
+        GetTotalFiles();
+        GetTotalSize();
+        function GetTotalSize() {
+            const client = new Client()
+                .setEndpoint('http://166.0.134.19/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6');               // Your project ID
+
+            const storage = new Storage(client);
+
+            let totalSize = 0;
+            storage.listFiles("FileBin").then(function (response) {
+                response.files.forEach(function (file) {
+                    totalSize += file.sizeOriginal / 1000000;
+                });
+                console.log("Total size of all files in the bucket: " + totalSize.toFixed(2));
+                document.getElementById('TotalSizeCard').innerHTML = totalSize.toFixed(2) + "|MB";
+            }, function (error) {
+                console.log(error);
+            });
+        }
+
+        function GetTotalFiles() {
+            const client = new Client()
+                .setEndpoint('http://166.0.134.19/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6');               // Your project ID
+
+            const storage = new Storage(client);
+
+            storage.listFiles('FileBin').then(function (response) {
+                console.log(response.total);
+                document.getElementById('TotalFilesCard').innerHTML = response.total;
+            }, function (error) {
+                console.log(error);
+            });
+        }
+
+        
+    </script>
+
 </head>
 
+
 <body>
-    
+
     <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="./images/company-large.png" alt="Company Logo"/>
-            
+            <img src="./images/company-large.png" alt="Company Logo" />
+
             <div class="sidebar-close" id="sidebar-close">
                 <i class='bx bx-left-arrow-alt'></i>
             </div>
@@ -103,7 +151,7 @@
 
     <!-- MAIN CONTENT -->
     <div class="main">
-        
+
         <div class="main-header">
             <div class="mobile-toggle" id="mobile-toggle">
                 <i class='bx bx-menu-alt-right'></i>
@@ -113,10 +161,10 @@
             </div>
         </div>
         <div class="main-content">
-            
+
             <div class="row">
-                
-                
+
+
                 <div class="col-3 col-md-6 col-sm-12">
                     <div class="counter-card box-hover">
                         <!-- CARD 1 -->
@@ -125,7 +173,7 @@
                                 total files
                             </div>
                             <div class="counter-info">
-                                <div class="counter-count">
+                                <div id="TotalFilesCard" class="counter-count">
                                     3
                                 </div>
                                 <i class='bx bx-data'></i>
@@ -142,10 +190,10 @@
                                 total size
                             </div>
                             <div class="counter-info">
-                                <div class="counter-count">
-                                    449|MB
+                                <div id="TotalSizeCard" class="counter-count">
+
                                 </div>
-                                <i class='bx bx-memory-card' ></i>
+                                <i class='bx bx-memory-card'></i>
                             </div>
                         </div>
                         <!-- END CARD 2 -->
