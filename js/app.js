@@ -17,9 +17,10 @@ document.querySelectorAll('.sidebar-submenu').forEach(e => {
 })
 
 
-let category_options = {
-    series: [2, 1],
-    labels: ['exe', 'png'],
+
+let extension_options = {
+    series: [2],
+    labels: ['exe'],
     chart: {
         type: 'pie',
     },
@@ -30,10 +31,10 @@ let category_options = {
     colors: ['#6ab04c', '#2980b9', '#f39c12', '#d35400']
 }
 
-let category_chart = new ApexCharts(document.querySelector("#category-chart"), category_options)
-category_chart.render()
+let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
+extension_chart.render()
 
-let customer_options = {
+let request_options = {
     series: [{
         name: "Requests",
         data: [20, 30, 34, 20, 16, 22, 31, 51, 37]
@@ -62,8 +63,8 @@ let customer_options = {
     }
 }
 
-let customer_chart = new ApexCharts(document.querySelector("#customer-chart"), customer_options)
-customer_chart.render()
+let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
+request_chart.render()
 
 setDarkChart = (dark) => {
     let theme = {
@@ -72,8 +73,8 @@ setDarkChart = (dark) => {
         }
     }
 
-    customer_chart.updateOptions(theme)
-    category_chart.updateOptions(theme)
+    request_chart.updateOptions(theme)
+    extension_chart.updateOptions(theme)
 }
 
 // DARK MODE TOGGLE

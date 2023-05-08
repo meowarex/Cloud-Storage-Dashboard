@@ -529,11 +529,11 @@ a {
     padding: 20px 0;
 }
 
-.product-list {
+.LargeFile-list {
     list-style-type: none;
 }
 
-.product-list-item {
+.LargeFile-list-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -552,18 +552,18 @@ a {
     margin-right: 10px;
 }
 
-.product-name,
-.product-sales {
+.LargeFile-name,
+.LargeFile-size {
     font-weight: 600;
     text-transform: capitalize;
 }
 
-.product-name {
+.LargeFile-name {
     margin-bottom: 5px;
     text-transform: lowercase;
 }
 
-.product-sales {
+.LargeFile-size {
     margin-top: 5px;
 }
 
@@ -608,44 +608,44 @@ table td {
     border-bottom: 1px solid var(--border-color);
 }
 
-.order-status {
+.action-tag {
     padding: 5px 15px;
     border-radius: 5px;
     font-weight: 500;
 }
 
-.order-ready {
+.download {
     color: #2a59d1;
     background-color: rgba(62, 121, 247, 0.1);
 }
 
-.order-shipped {
+.upload {
     color: #00ab6f;
     background-color: rgba(4, 209, 130, 0.1);
 }
 
-.order-deleted {
+.delete {
     color: #da0000;
     background-color: rgba(218, 0, 0, 0.1);
 }
 
-.payment-status {
+.action-response {
     display: flex;
     align-items: center;
 }
 
-.payment-status .dot {
+.action-response .dot {
     width: 10px;
     height: 10px;
     border-radius: 50%;
     margin-right: 10px;
 }
 
-.payment-paid .dot {
+.success .dot {
     background-color: #04d182;
 }
 
-.payment-pending .dot {
+.failed .dot {
     background-color: #da0000;
 }
 

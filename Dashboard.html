@@ -48,6 +48,25 @@
                 console.log(error); // Failure
             });
         }
+
+        
+        function GetTotalUsers() {
+            const client = new Client()
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6');               // Your project ID
+
+            const account = new Account(client);
+
+            const promise = account.listus('current');
+
+            promise.then(function (response) {
+                document.getElementById('UserName').innerHTML = response.providerUid;
+                console.log(response); // Success
+            }, function (error) {
+                console.log(error); // Failure
+            });
+        }
+
         function GetTotalSize() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
@@ -92,20 +111,26 @@
             storage.listFiles('FileBin').then(function (response) {
                 console.log(response.files);
                 let FileArray = response.files;
+                let FileArray2 = FileArray[0].chunksTotal;
                 let i = 0;
                 document.getElementById('LargeFiles').innerHTML = '';
-                while (i <= FileArray.length -1 ) {
+                while (i <= FileArray.length - 1) {
                     let FileName = FileArray[i].name;
                     let FileSize = FileArray[i].sizeOriginal / 1000000;
-                        document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="product-list-item"> <div class="item-info"> <div class="item-name"> <div class="product-name">' + FileName + '</div> <div class="text-second">Executable</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="product-sales">' + FileSize.toFixed(2) + '|MB</div> </div> </li>');
-                        console.log(FileName + ' | ' + FileSize.toFixed(2));
+                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">Executable</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + '|MB</div> </div> </li>');
+
+                    console.log(FileName + ' | ' + FileSize.toFixed(2));
                     i = i + 1;
                 }
+                window.MyArray = FileArray2;
                 
+
             }, function (error) {
                 console.log(error);
             });
         }
+        
+
 
 
     </script>
@@ -287,44 +312,18 @@
                             largest files
                         </div>
                         <div class="box-body">
-                            <ul id="LargeFiles" class="product-list">
-                                <li class="product-list-item">
+                            <ul id="LargeFiles" class="LargeFile-list">
+                                <li class="LargeFile-list-item">
                                     <div class="item-info">
 
                                         <div class="item-name">
-                                            <div class="product-name">setup.exe</div>
-                                            <div class="text-second">Executable</div>
+                                            <div class="LargeFile-name">FileName</div>
+                                            <div class="text-second">FileType</div>
                                         </div>
                                     </div>
                                     <div class="item-sale-info">
                                         <div class="text-second">size</div>
-                                        <div class="product-sales">378|MB</div>
-                                    </div>
-                                </li>
-                                <li class="product-list-item">
-                                    <div class="item-info">
-
-                                        <div class="item-name">
-                                            <div class="product-name">nmap.exe</div>
-                                            <div class="text-second">Executable</div>
-                                        </div>
-                                    </div>
-                                    <div class="item-sale-info">
-                                        <div class="text-second">size</div>
-                                        <div class="product-sales">54|MB</div>
-                                    </div>
-                                </li>
-                                <li class="product-list-item">
-                                    <div class="item-info">
-
-                                        <div class="item-name">
-                                            <div class="product-name">report.png</div>
-                                            <div class="text-second">Image</div>
-                                        </div>
-                                    </div>
-                                    <div class="item-sale-info">
-                                        <div class="text-second">size</div>
-                                        <div class="product-sales">17|MB</div>
+                                        <div class="LargeFile-sales">FileSize</div>
                                     </div>
                                 </li>
 
@@ -341,7 +340,7 @@
                             File Extensions
                         </div>
                         <div class="box-body">
-                            <div id="category-chart"></div>
+                            <div id="extension-chart"></div>
                         </div>
                     </div>
                     <!-- END EXTENSION CHART -->
@@ -353,7 +352,7 @@
                             API Requests
                         </div>
                         <div class="box-body">
-                            <div id="customer-chart"></div>
+                            <div id="request-chart"></div>
                         </div>
                     </div>
                     <!-- END USAGE CHART -->
@@ -387,12 +386,12 @@
                                         </td>
                                         <td>2023-05-05</td>
                                         <td>
-                                            <span class="order-status order-ready">
+                                            <span class="action-tag download">
                                                 Download
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="payment-status payment-paid">
+                                            <div class="action-response success">
                                                 <div class="dot"></div>
                                                 <span>Success</span>
                                             </div>
@@ -409,12 +408,12 @@
                                         </td>
                                         <td>2023-05-05</td>
                                         <td>
-                                            <span class="order-status order-shipped">
+                                            <span class="action-tag upload">
                                                 Upload
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="payment-status payment-paid">
+                                            <div class="action-response success">
                                                 <div class="dot"></div>
                                                 <span>Success</span>
                                             </div>
@@ -431,12 +430,12 @@
                                         </td>
                                         <td>2023-05-05</td>
                                         <td>
-                                            <span class="order-status order-deleted">
+                                            <span class="action-tag delete">
                                                 Delete
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="payment-status payment-pending">
+                                            <div class="action-response failed">
                                                 <div class="dot"></div>
                                                 <span>Failed</span>
                                             </div>
