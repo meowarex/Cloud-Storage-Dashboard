@@ -120,28 +120,44 @@
                 document.getElementById('LargeFiles').innerHTML = '';
                 while (i <= FileArray.length - 1) {
                     let FileName = FileArray[i].name;
+                    let FileSize = 0;
+                    let FileExt = "executable";
+                    let SizeUnit = "|MB";
 
-                    if ((FileArray[i].sizeOriginal / 1000000).includes("0.")) {
-                        let FileSize = (FileArray[i].sizeOriginal / 1000000) * 1000;
+                    if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 0) {
+                        FileSize = (FileArray[i].sizeOriginal / 1000000) * 1000;
+                        SizeUnit = "|KB";
                     }
-                    else if ((FileArray[i].sizeOriginal / 1000000).includes("1.")) {
-                        let FileSize = (FileArray[i].sizeOriginal / 1000000);
+                    else if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 1) {
+                        FileSize = (FileArray[i].sizeOriginal / 1000000);
+                        SizeUnit = "|MB";
                     }
-                    
-                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">Executable</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + '|MB</div> </div> </li>');
 
-
-                    
 
                     if (FileArray[i].name.includes(".exe")) {
-                        FileExtArray[0] = FileExtArray[0] + 1
+                        FileExtArray[0] = FileExtArray[0] + 1;
+                        FileExt = "Executable";
                     } else if (FileArray[i].name.includes(".png")) {
-                        FileExtArray[1] = FileExtArray[1] + 1
+                        FileExtArray[1] = FileExtArray[1] + 1;
+                        FileExt = "Image File";
                     }
+
+                    console.log(FileSize)
+                    console.log("Thongo: " + Math.trunc((FileArray[i].sizeOriginal / 1000000)));
+                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
 
                     i = i + 1;
                 }
                 console.log("Extension Chart Values: " + FileExtArray);
+                const today = new Date();
+                const date = today.getDate();
+                const month = today.getMonth() + 1;
+                const year = today.getFullYear();
+                const time = (today.getHours() - 12);
+                //if statement goes here that determines AM|PM from timestring
+                //const zone = today.to
+                const formattedDate = `${date}/${month}/${year} | ${time}`;
+                console.log(formattedDate);
                 MakeExtChart();
 
 

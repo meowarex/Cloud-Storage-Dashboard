@@ -23,7 +23,7 @@ document.querySelectorAll('.sidebar-submenu').forEach(e => {
 let request_options = {
     series: [{
         name: "Requests",
-        data: [20, 30, 34, 20, 16, 22, 31, 51, 37]
+        data: [20, 30, 34, 20, 16, 22, 31, 51, 37, 20, 30, 34, 27]
     }],
     colors: ['#6ab04c'],
 
@@ -40,7 +40,8 @@ let request_options = {
     },
 
     xaxis: {
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        type: 'day',
+        categories: ['12:00|AM', '1:00|AM', '2:00|AM', '3:00|AM', '4:00|AM', '5:00|AM', '6:00|AM', '7:00|AM', '8:00|AM', '9:00|AM', '10:00|AM', '11:00|AM', '12:00|PM'],
     },
 
     legend: {
