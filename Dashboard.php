@@ -23,15 +23,51 @@
     <link rel="stylesheet" href="./css/grid.css">
     <link rel="stylesheet" href="./css/app.css">
 
+    <!-- PHP SCRIPTS -->
+    <?php
+    require __DIR__ . '/vendor/autoload.php';
+
+    use Appwrite\Client;
+    use Appwrite\Services\Users;
+
+    $client = new Client();
+
+    $client
+        ->setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+        ->setProject('64511dda13070874dfb6') // Your project ID
+        ->setKey('95fb218c695522b2f45167e2fc2a2770238998350663d0a839af6481fb310a904a3db0a570e16651622852d3f2acf694043fc36ea528153a37dd382d919deae3e887d8b5dc9dd8fe92c1a7d67265885296987692fd732210fb6646d137d3c2dbf6d037fa7b87b8a008a715e10c781b14945c2900ecbb9602ad48521bf6c13d08') // Your secret API key
+    ;
+
+    $users = new Users($client);
+
+    $result = $users->list();
+    echo '<script>';
+    echo 'let TotalUsers = ' . json_encode($result) . '';
+    echo '</script>';
+
+    ?>
+
+    <!-- END PHP SCRIPTS -->
+
+
     <!-- SCRIPTS -->
     <script>
-        const { Client, Account, ID, Storage } = Appwrite;
+        const { Client, Account, ID, Storage, Query, Databases } = Appwrite;
 
+        let FileExtArray = [0, 0];
+
+        console.log("[!] => START <= [!]");
         GetUserName();
         GetTotalFiles();
         GetTotalSize();
-        let FileExtArray = [0, 0];
         GetFiles();
+        GetActions();
+
+
+
+        function RequestDivider() {
+            console.log("");
+        }
 
         function GetUserName() {
             const client = new Client()
@@ -44,29 +80,19 @@
 
             promise.then(function (response) {
                 document.getElementById('UserName').innerHTML = response.providerUid;
-                console.log(response); // Success
+                console.log("  => Get UserName: Success"); // Success
+
+
+                document.getElementById('TotalUsersCard').innerHTML = TotalUsers.total;
+                console.log("  => Get TotalUsers: Success"); // Success
+
+
             }, function (error) {
-                console.log(error); // Failure
+                console.log("  => Get UserName: FAILED -> | " + error); // Failure
+                console.log("  => Get TotalUsers: FAILED -> | " + error); // Failure
             });
         }
 
-
-        function GetTotalUsers() {
-            const client = new Client()
-                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6');               // Your project ID
-
-            const account = new Account(client);
-
-            const promise = account.listus('current');
-
-            promise.then(function (response) {
-                document.getElementById('UserName').innerHTML = response.providerUid;
-                console.log(response); // Success
-            }, function (error) {
-                console.log(error); // Failure
-            });
-        }
 
         function GetTotalSize() {
             const client = new Client()
@@ -80,10 +106,12 @@
                 response.files.forEach(function (file) {
                     totalSize += file.sizeOriginal / 1000000;
                 });
-                console.log("Total size of all files in the bucket: " + totalSize.toFixed(2));
+
                 document.getElementById('TotalSizeCard').innerHTML = totalSize.toFixed(2) + "|MB";
+                console.log("  => Get TotalSize: Success"); // Success
+
             }, function (error) {
-                console.log(error);
+                console.log("  => Get TotalSize: FAILED -> | " + error);
             });
         }
 
@@ -95,10 +123,12 @@
             const storage = new Storage(client);
 
             storage.listFiles('FileBin').then(function (response) {
-                console.log(response.total);
+
                 document.getElementById('TotalFilesCard').innerHTML = response.total;
+                console.log("  => Get TotalFiles: Success"); // Success
+
             }, function (error) {
-                console.log(error);
+                console.log("  => Get TotalFiles: FAILED -> | " + error);
             });
         }
 
@@ -110,19 +140,16 @@
             const storage = new Storage(client);
 
             storage.listFiles('FileBin').then(function (response) {
-                console.log(response.files);
                 let FileArray = response.files;
                 FileExtArray = [0, 0];
 
-
-                let FileArray2 = FileArray[0].chunksTotal;
                 let i = 0;
                 document.getElementById('LargeFiles').innerHTML = '';
                 while (i <= FileArray.length - 1) {
                     let FileName = FileArray[i].name;
                     let FileSize = 0;
-                    let FileExt = "executable";
-                    let SizeUnit = "|MB";
+                    let FileExt = "NULL";
+                    let SizeUnit = "NULL";
 
                     if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 0) {
                         FileSize = (FileArray[i].sizeOriginal / 1000000) * 1000;
@@ -142,29 +169,27 @@
                         FileExt = "Image File";
                     }
 
-                    console.log(FileSize)
-                    console.log("Thongo: " + Math.trunc((FileArray[i].sizeOriginal / 1000000)));
                     document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
 
                     i = i + 1;
                 }
-                console.log("Extension Chart Values: " + FileExtArray);
-                const today = new Date();
-                const date = today.getDate();
-                const month = today.getMonth() + 1;
-                const year = today.getFullYear();
-                const time = (today.getHours() - 12);
-                //if statement goes here that determines AM|PM from timestring
-                //const zone = today.to
-                const formattedDate = `${date}/${month}/${year} | ${time}`;
-                console.log(formattedDate);
+
+                console.log("  => Get LargeFiles: Success"); // Success
+
+
+
+
+                var today = new Date();
+                var sevenDaysAgo = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+                var isoDate = sevenDaysAgo.toISOString().split('T')[0];
+
+                //console.log(isoDate);
+
                 MakeExtChart();
 
 
-
-
             }, function (error) {
-                console.log(error);
+                console.log("  => Get LargeFiles: FAILED -> | " + error);
             });
         }
 
@@ -184,9 +209,80 @@
 
             let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
             extension_chart.render()
+
+
         }
 
+        function GetActions() {
+            const client = new Client()
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6');               // Your project ID
 
+
+            const databases = new Databases(client);
+
+            const promise = databases.listDocuments(
+                'Dashboard',
+                'ActionLog',
+                [
+                    Query.select(['File', 'User', 'Date', 'Action', 'Response', 'Source'])
+                ]
+            ).then(function (response) {
+                let i = 0;
+                let ActionArray = response.documents;
+
+                document.getElementById('ActionsTable').innerHTML = '';
+                while (i <= ActionArray.length - 1) {
+                    let File = ActionArray[i].File;
+                    let User = ActionArray[i].User;
+                    let Date = ActionArray[i].Date;
+                    let Action = ActionArray[i].Action;
+                    let Response = ActionArray[i].Response;
+                    let Source = ActionArray[i].Source;
+
+                    document.getElementById('ActionsTable').insertAdjacentHTML('beforeend',
+                        (`<tr>
+                                        <td>` + File + `</td>
+                                        <td>
+                                            <div class="order-owner">
+                                                <img src="./images/user-image-2.png" alt="user image">
+                                                <span>` + User + `</span>
+                                            </div>
+                                        </td>
+                                        <td>2023-05-05</td>
+                                        <td>
+                                            <span class="action-tag download">
+                                                ` + Action + `
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-response success">
+                                                <div class="dot"></div>
+                                                <span>` + Response + `</span>
+                                            </div>
+                                        </td>
+                                        <td>` + Source + `</td>
+                                    </tr>`)
+                    );
+                    i = i + 1
+                }
+
+                console.log("  => Get ActionLogs: Success"); // Success
+
+
+                
+                setTimeout(() => {
+                    console.log("[!] => END <= [!]");
+                    RequestDivider();
+                }, 1000);
+                
+
+            }, function (error) {
+                console.log("  => Get ActionLogs: FAILED -> | " + error);
+            });
+
+
+        }
 
 
     </script>
@@ -208,7 +304,7 @@
         <div class="sidebar-user">
             <div class="sidebar-user-info">
                 <img src="./images/user-image-2.png" alt="User picture" class="profile-image">
-                <div id="UserName" class="sidebar-user-name">
+                <div id="UserName" class="sidebar-user-name" style="text-transform: lowercase;">
                     Logged in user
                 </div>
             </div>
@@ -349,7 +445,7 @@
                                 total users
                             </div>
                             <div class="counter-info">
-                                <div class="counter-count">
+                                <div id="TotalUsersCard" class="counter-count">
                                     Users
                                 </div>
                                 <i class='bx bx-user'></i>
@@ -431,72 +527,28 @@
                                         <th>Source IP</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="ActionsTable">
                                     <tr>
-                                        <td>nmap.exe</td>
+                                        <td>FileName</td>
                                         <td>
                                             <div class="order-owner">
                                                 <img src="./images/user-image-2.png" alt="user image">
-                                                <span>Holographic</span>
+                                                <span>UserName</span>
                                             </div>
                                         </td>
                                         <td>2023-05-05</td>
                                         <td>
                                             <span class="action-tag download">
-                                                Download
+                                                Action
                                             </span>
                                         </td>
                                         <td>
                                             <div class="action-response success">
                                                 <div class="dot"></div>
-                                                <span>Success</span>
+                                                <span>Response</span>
                                             </div>
                                         </td>
-                                        <td>127.0.0.1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>report.png</td>
-                                        <td>
-                                            <div class="order-owner">
-                                                <img src="./images/user-image-2.png" alt="user image">
-                                                <span>Other Dude</span>
-                                            </div>
-                                        </td>
-                                        <td>2023-05-05</td>
-                                        <td>
-                                            <span class="action-tag upload">
-                                                Upload
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-response success">
-                                                <div class="dot"></div>
-                                                <span>Success</span>
-                                            </div>
-                                        </td>
-                                        <td>127.0.0.1</td>
-                                    </tr>
-                                    <tr>
-                                        <td>setup.exe</td>
-                                        <td>
-                                            <div class="order-owner">
-                                                <img src="./images/user-image-3.png" alt="user image">
-                                                <span>Some Wooman</span>
-                                            </div>
-                                        </td>
-                                        <td>2023-05-05</td>
-                                        <td>
-                                            <span class="action-tag delete">
-                                                Delete
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-response failed">
-                                                <div class="dot"></div>
-                                                <span>Failed</span>
-                                            </div>
-                                        </td>
-                                        <td>127.0.0.1</td>
+                                        <td>IP Address</td>
                                     </tr>
 
                                 </tbody>

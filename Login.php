@@ -28,9 +28,12 @@
 
             promise.then(function (response) {
                 console.log(response); // Success
+                window.location.href = "Dashboard.php";
             }, function (error) {
                 console.log(error); // Failure
             });
+
+
         }
     </script>
 </head>

@@ -266,6 +266,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    text-transform: lowercase;
     padding: 15px;
 }
 
