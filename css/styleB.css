@@ -1,8 +1,0 @@
-@import "compass/css3";
-
-body {
-  background: none;
-  backdrop-filter: blur(25px);
-  height: 100vh;
-  font-family: "Poppins", system-ui;
-}

@@ -30,6 +30,7 @@
         GetUserName();
         GetTotalFiles();
         GetTotalSize();
+        let FileExtArray = [0, 0];
         GetFiles();
 
         function GetUserName() {
@@ -49,7 +50,7 @@
             });
         }
 
-        
+
         function GetTotalUsers() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
@@ -111,25 +112,64 @@
             storage.listFiles('FileBin').then(function (response) {
                 console.log(response.files);
                 let FileArray = response.files;
+                FileExtArray = [0, 0];
+
+
                 let FileArray2 = FileArray[0].chunksTotal;
                 let i = 0;
                 document.getElementById('LargeFiles').innerHTML = '';
                 while (i <= FileArray.length - 1) {
                     let FileName = FileArray[i].name;
-                    let FileSize = FileArray[i].sizeOriginal / 1000000;
+
+                    if ((FileArray[i].sizeOriginal / 1000000).includes("0.")) {
+                        let FileSize = (FileArray[i].sizeOriginal / 1000000) * 1000;
+                    }
+                    else if ((FileArray[i].sizeOriginal / 1000000).includes("1.")) {
+                        let FileSize = (FileArray[i].sizeOriginal / 1000000);
+                    }
+                    
                     document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">Executable</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + '|MB</div> </div> </li>');
 
-                    console.log(FileName + ' | ' + FileSize.toFixed(2));
+
+                    
+
+                    if (FileArray[i].name.includes(".exe")) {
+                        FileExtArray[0] = FileExtArray[0] + 1
+                    } else if (FileArray[i].name.includes(".png")) {
+                        FileExtArray[1] = FileExtArray[1] + 1
+                    }
+
                     i = i + 1;
                 }
-                window.MyArray = FileArray2;
-                
+                console.log("Extension Chart Values: " + FileExtArray);
+                MakeExtChart();
+
+
+
 
             }, function (error) {
                 console.log(error);
             });
         }
-        
+
+        function MakeExtChart() {
+            let extension_options = {
+                series: FileExtArray,
+                labels: ['exe', 'png'],
+                chart: {
+                    type: 'pie',
+                },
+                dataLabels: {
+                    enabled: true,
+
+                },
+                colors: ['#6ab04c', '#2980b9', '#f39c12', '#d35400']
+            }
+
+            let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
+            extension_chart.render()
+        }
+
 
 
 

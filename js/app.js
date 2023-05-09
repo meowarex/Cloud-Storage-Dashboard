@@ -18,21 +18,7 @@ document.querySelectorAll('.sidebar-submenu').forEach(e => {
 
 
 
-let extension_options = {
-    series: [2],
-    labels: ['exe'],
-    chart: {
-        type: 'pie',
-    },
-    dataLabels: {
-        enabled: true,
-    
-    },
-    colors: ['#6ab04c', '#2980b9', '#f39c12', '#d35400']
-}
 
-let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
-extension_chart.render()
 
 let request_options = {
     series: [{
