@@ -20,39 +20,6 @@ document.querySelectorAll('.sidebar-submenu').forEach(e => {
 
 
 
-let request_options = {
-    series: [{
-        name: "Requests",
-        data: [20, 30, 33, 20, 16, 22, 24]
-    }],
-    colors: ['#6ab04c'],
-
-    chart: {
-        height: 350,
-        type: 'area',
-    },
-    dataLabels: {
-        enabled: false
-    },
-    stroke: {
-        curve: 'smooth',
-
-    },
-
-    xaxis: {
-        type: 'day',
-        categories: [],
-    },
-
-    legend: {
-
-        position: 'top',
-    }
-}
-
-let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
-request_chart.render()
-
 setDarkChart = (dark) => {
     let theme = {
         theme: {

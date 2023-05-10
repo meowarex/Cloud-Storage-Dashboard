@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="./css/app.css">
 
     <!-- PHP SCRIPTS -->
-    
+
     <?php
     require __DIR__ . '/vendor/autoload.php';
 
@@ -76,12 +76,13 @@
                 console.log("[!] => START <= [!]");
 
                 console.log("  => Get CheckAuth: Success"); // Success
-                
+
                 GetUserName();
                 GetTotalFiles();
                 GetTotalSize();
                 GetFiles();
                 GetActions();
+                LoopRequests();
 
             }, function (error) {
                 console.log(error); // Failure
@@ -198,14 +199,6 @@
                 console.log("  => Get LargeFiles: Success"); // Success
 
 
-
-
-                var today = new Date();
-                var sevenDaysAgo = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
-                var isoDate = sevenDaysAgo.toISOString().split('T')[0];
-
-                //console.log(isoDate);
-
                 MakeExtChart();
 
 
@@ -219,6 +212,7 @@
                 series: FileExtArray,
                 labels: ['exe', 'png'],
                 chart: {
+                    height: 350,
                     type: 'pie',
                 },
                 dataLabels: {
@@ -233,6 +227,8 @@
 
 
         }
+
+        let ActionCount = 'NULL';
 
         function GetActions() {
             const client = new Client()
@@ -251,6 +247,7 @@
             ).then(function (response) {
                 let i = 0;
                 let ActionArray = response.documents;
+                ActionCount = ActionArray.length;
 
                 document.getElementById('ActionsTable').innerHTML = '';
                 while (i <= ActionArray.length - 1) {
@@ -270,7 +267,7 @@
                                                 <span>` + User + `</span>
                                             </div>
                                         </td>
-                                        <td>2023-05-05</td>
+                                        <td>` + Date + `</td>
                                         <td>
                                             <span class="action-tag download">
                                                 ` + Action + `
@@ -288,7 +285,8 @@
                     i = i + 1
                 }
 
-                console.log("  => Get ActionLogs: Success"); // Success
+                document.getElementById('TotalActionsCard').innerHTML = ActionCount;
+                console.log("  => Get Actions: Success"); // Success
 
 
 
@@ -299,13 +297,12 @@
 
 
             }, function (error) {
-                console.log("  => Get ActionLogs: FAILED -> | " + error);
+                console.log("  => Get Actions: FAILED -> | " + error);
             });
 
         }
 
         function LogOut() {
-
 
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
@@ -322,6 +319,103 @@
                 console.log("  => Get LogOut: FAILED -> | " + error);
             });
         }
+
+        let TestArray = new Array;
+        let DateArray = new Array;
+
+        async function GetRequests(i) {
+
+            const client = new Client()
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6'); // Your project ID
+
+            const databases = await new Databases(client);
+
+            var today = new Date();
+            var options = { year: 'numeric', month: 'numeric', day: 'numeric' };
+            var DaysAgo = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
+            const year = DaysAgo.getFullYear();
+            const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(DaysAgo);
+            const month = String(DaysAgo.getMonth() + 1).padStart(2, '0');
+            const day = String(DaysAgo.getDate()).padStart(2, '0');
+            var isoDate = `${year}-${month}-${day}`;
+            var Day = today.getDay();
+     
+
+
+            let promise = databases.listDocuments(
+                'Dashboard',
+                'ActionLog',
+                [
+                    Query.equal('Date', [isoDate])
+                ]);
+
+            setTimeout(() => {
+                promise.then(function (response) {
+                    let object = response.documents;
+                    console.log( '     ->', response.total, isoDate, i, object );
+                    TestArray[(7 - i)] = response.total;
+                    DateArray[(7 - i)] = dayOfWeek;
+
+                }, function (error) { 
+                    console.log("  => Get ActionLogs: FAILED -> | " + error);
+                });
+                setTimeout(() => {
+                    
+                }, 500);
+            }, 100);
+
+        }
+
+        async function LoopRequests() {
+            let i = 7;
+            while (i > -1) {
+                GetRequests(i);
+                i = i - 1;
+            }
+
+            setTimeout(() => {
+                MakeReqChart();
+                console.log('  => Get ActionLogs: Success')
+            }, 1000);
+        }
+
+        function MakeReqChart() {
+            let request_options = {
+                series: [{
+                    data: TestArray,
+                }],
+                colors: ['#6ab04c'],
+
+                chart: {
+                    height: 350,
+                    type: 'area',
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+
+                },
+
+                xaxis: {
+                    type: 'day',
+                    categories: DateArray,
+                },
+
+                legend: {
+
+                    position: 'top',
+                }
+            }
+
+            let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
+            request_chart.render()
+
+        }
+
+
 
 
     </script>
@@ -466,11 +560,11 @@
                         <!-- CARD 3 -->
                         <div class="counter">
                             <div class="counter-title">
-                                total requests
+                                total actions
                             </div>
                             <div class="counter-info">
-                                <div class="counter-count">
-                                    Requests
+                                <div id="TotalActionsCard" class="counter-count">
+                                    Actions
                                 </div>
                                 <i class='bx bx-sort'></i>
                             </div>
