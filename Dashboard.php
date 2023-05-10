@@ -320,7 +320,7 @@
             });
         }
 
-        let TestArray = new Array;
+        let ActionLogArray = new Array;
         let DateArray = new Array;
 
         async function GetRequests(i) {
@@ -354,7 +354,7 @@
                 promise.then(function (response) {
                     let object = response.documents;
                     console.log( '     ->', response.total, isoDate, i, object );
-                    TestArray[(7 - i)] = response.total;
+                    ActionLogArray[(7 - i)] = response.total;
                     DateArray[(7 - i)] = dayOfWeek;
 
                 }, function (error) { 
@@ -383,7 +383,7 @@
         function MakeReqChart() {
             let request_options = {
                 series: [{
-                    data: TestArray,
+                    data: ActionLogArray,
                 }],
                 colors: ['#6ab04c'],
 
