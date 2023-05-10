@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="./css/app.css">
 
     <!-- PHP SCRIPTS -->
+    
     <?php
     require __DIR__ . '/vendor/autoload.php';
 
@@ -56,17 +57,37 @@
 
         let FileExtArray = [0, 0];
 
-        console.log("[!] => START <= [!]");
-        GetUserName();
-        GetTotalFiles();
-        GetTotalSize();
-        GetFiles();
-        GetActions();
-
-
+        CheckAuth();
 
         function RequestDivider() {
             console.log("");
+        }
+
+        function CheckAuth() {
+
+            const client = new Client()
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6');  // Your project ID
+
+            const account = new Account(client);
+            const promise = account.getSession('current');
+
+            promise.then(function (response) {
+                console.log("[!] => START <= [!]");
+
+                console.log("  => Get CheckAuth: Success"); // Success
+                
+                GetUserName();
+                GetTotalFiles();
+                GetTotalSize();
+                GetFiles();
+                GetActions();
+
+            }, function (error) {
+                console.log(error); // Failure
+
+                window.location.href = "Login.php";
+            });
         }
 
         function GetUserName() {
@@ -270,27 +291,47 @@
                 console.log("  => Get ActionLogs: Success"); // Success
 
 
-                
+
                 setTimeout(() => {
                     console.log("[!] => END <= [!]");
                     RequestDivider();
                 }, 1000);
-                
+
 
             }, function (error) {
                 console.log("  => Get ActionLogs: FAILED -> | " + error);
             });
 
+        }
 
+        function LogOut() {
+
+
+            const client = new Client()
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6');  // Your project ID
+
+            const account = new Account(client);
+
+            const promise = account.deleteSession('current');
+
+            promise.then(function (response) {
+                console.log("  => Get LogOut: Success"); // Success
+                CheckAuth();
+            }, function (error) {
+                console.log("  => Get LogOut: FAILED -> | " + error);
+            });
         }
 
 
     </script>
 
+
 </head>
 
 
 <body>
+
 
     <!-- SIDEBAR -->
     <div class="sidebar">
@@ -308,7 +349,7 @@
                     Logged in user
                 </div>
             </div>
-            <button class="btn btn-outline">
+            <button class="btn btn-outline" onclick="LogOut()">
                 <i class='bx bx-log-out bx-flip-horizontal'></i>
             </button>
         </div>
