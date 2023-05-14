@@ -213,7 +213,8 @@
                 labels: ['exe', 'png'],
                 chart: {
                     height: 350,
-                    type: 'pie',
+                    type: 'donut',
+                    width: 340,
                 },
                 dataLabels: {
                     enabled: true,
@@ -242,7 +243,8 @@
                 'Dashboard',
                 'ActionLog',
                 [
-                    Query.select(['File', 'User', 'Date', 'Action', 'Response', 'Source'])
+                    Query.select(['File', 'User', 'Date', 'Action', 'Response', 'Source']),
+                    Query.orderDesc("Date")
                 ]
             ).then(function (response) {
                 let i = 0;
@@ -269,12 +271,12 @@
                                         </td>
                                         <td>` + Date + `</td>
                                         <td>
-                                            <span class="action-tag download">
+                                            <span class="action-tag ` + Action +  `">
                                                 ` + Action + `
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="action-response success">
+                                            <div class="action-response ` + Response + `">
                                                 <div class="dot"></div>
                                                 <span>` + Response + `</span>
                                             </div>
@@ -340,7 +342,7 @@
             const day = String(DaysAgo.getDate()).padStart(2, '0');
             var isoDate = `${year}-${month}-${day}`;
             var Day = today.getDay();
-     
+
 
 
             let promise = databases.listDocuments(
@@ -353,15 +355,20 @@
             setTimeout(() => {
                 promise.then(function (response) {
                     let object = response.documents;
-                    console.log( '     ->', response.total, isoDate, i, object );
-                    ActionLogArray[(7 - i)] = response.total;
-                    DateArray[(7 - i)] = dayOfWeek;
+                    
+                    setTimeout(() => {
+                        ActionLogArray[(7 - i)] = response.total;
+                        console.log('     ->', response.total, isoDate, i, object);
+                        DateArray[(7 - i)] = dayOfWeek;
+                    }, 500);
 
-                }, function (error) { 
+                    
+
+                }, function (error) {
                     console.log("  => Get ActionLogs: FAILED -> | " + error);
                 });
                 setTimeout(() => {
-                    
+
                 }, 500);
             }, 100);
 
@@ -412,7 +419,7 @@
 
             let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
             request_chart.render()
-
+           
         }
 
 
@@ -458,7 +465,7 @@
 
 
             <li>
-                <a href="#">
+                <a href="./Files.php">
                     <i class='bx bx-hdd'></i>
                     <span>Files</span>
                 </a>

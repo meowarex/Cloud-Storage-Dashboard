@@ -615,17 +615,17 @@ table td {
     font-weight: 500;
 }
 
-.download {
+.Download {
     color: #2a59d1;
     background-color: rgba(62, 121, 247, 0.1);
 }
 
-.upload {
+.Upload {
     color: #00ab6f;
     background-color: rgba(4, 209, 130, 0.1);
 }
 
-.delete {
+.Delete {
     color: #da0000;
     background-color: rgba(218, 0, 0, 0.1);
 }
@@ -642,11 +642,11 @@ table td {
     margin-right: 10px;
 }
 
-.success .dot {
+.Success .dot {
     background-color: #04d182;
 }
 
-.failed .dot {
+.Failed .dot {
     background-color: #da0000;
 }
 
