@@ -30,6 +30,7 @@
 
     use Appwrite\Client;
     use Appwrite\Services\Users;
+    use Appwrite\Services\Storage;
 
     $client = new Client();
 
@@ -46,6 +47,24 @@
     echo 'let TotalUsers = ' . json_encode($result) . '';
     echo '</script>';
 
+    function GetBuckets()
+    {
+
+        $client = new Client();
+
+        $client
+            ->setEndpoint('http://166.0.134.19/v1') // Your API Endpoint
+            ->setProject('64511dda13070874dfb6') // Your project ID
+            ->setKey('95fb218c695522b2f45167e2fc2a2770238998350663d0a839af6481fb310a904a3db0a570e16651622852d3f2acf694043fc36ea528153a37dd382d919deae3e887d8b5dc9dd8fe92c1a7d67265885296987692fd732210fb6646d137d3c2dbf6d037fa7b87b8a008a715e10c781b14945c2900ecbb9602ad48521bf6c13d08') // Your secret API key
+        ;
+
+        $storage = new Storage($client);
+        $result = $storage->listBuckets();
+
+        echo 'window.BucketArray =' . json_encode($result) . ';';
+        echo 'ListBuckets();';
+
+    }
     ?>
 
     <!-- END PHP SCRIPTS -->
@@ -77,10 +96,11 @@
 
                 console.log("  => Get CheckAuth: Success"); // Success
 
-                //GetUserName();
-                //GetTotalFiles();
-                //GetTotalSize();
-                //GetFiles();
+                GetUserName();
+                GetTotalFiles();
+                GetTotalSize();
+                GatherBuckets();
+                //GetFiles('FileBin');
                 //GetActions();
                 //LoopRequests();
 
@@ -137,6 +157,29 @@
             });
         }
 
+        function GatherBuckets() {
+            <?php GetBuckets(); ?>
+        }
+
+        function ListBuckets() {
+            console.log(window.BucketArray.buckets);
+            let i = 0;
+
+            document.getElementById('BucketTable').innerHTML = ' ';
+            while (i <= window.BucketArray.buckets.length - 1) {
+                let BucketName = window.BucketArray.buckets[i].name;
+                let BucketID = window.BucketArray.buckets[i].$id;
+                document.getElementById('BucketTable').insertAdjacentHTML('beforeend',                                    
+                                    (`<tr>
+                                        <td> <i class='bx bx-folder'></i> <btn onclick="GetFiles('` + BucketID + `')">` + BucketName + `</btn> </td>
+                                        <td style="text-align: center;">Files</td>
+                                        <td style="text-align: right;">Size</td>
+                                    </tr>`));
+               
+                i = i + 1;
+            }
+        }
+
         function GetTotalFiles() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
@@ -154,23 +197,26 @@
             });
         }
 
-        function GetFiles() {
+        function GetFiles(BucketID) {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
                 .setProject('64511dda13070874dfb6');               // Your project IDsss
 
             const storage = new Storage(client);
 
-            storage.listFiles('FileBin').then(function (response) {
+            storage.listFiles(BucketID).then(function (response) {
+                
                 let FileArray = response.files;
-                FileExtArray = [0, 0];
+                
 
                 let i = 0;
-                document.getElementById('LargeFiles').innerHTML = '';
+                document.getElementById('FileTable').innerHTML = '';
                 while (i <= FileArray.length - 1) {
                     let FileName = FileArray[i].name;
                     let FileSize = 0;
                     let FileExt = "NULL";
+                    //let FileDate =FileArray[i].$created;
+                    let FileID = FileArray[i].$id;
                     let SizeUnit = "NULL";
 
                     if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 0) {
@@ -191,15 +237,23 @@
                         FileExt = "Image File";
                     }
 
-                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
-
+                    document.getElementById('FileTable').insertAdjacentHTML('beforeend',
+                                    (`<tr>
+                                        <td style="text-align: left;">` + FileName + `</td>
+                                        <td style="text-align: center;">` + FileSize + SizeUnit + `</td>
+                                        <td style="text-align: center;">` + FileExt + `</td>
+                                        <td style="text-align: center;">Download</td>
+                                        <td style="text-align: center;">Delete</td>
+                                        <td style="text-align: right;">` + FileID + `</td>
+                                    </tr>`));
+                                    
                     i = i + 1;
                 }
 
                 console.log("  => Get LargeFiles: Success"); // Success
+                
 
-
-                MakeExtChart();
+                //MakeExtChart();
 
 
             }, function (error) {
@@ -594,8 +648,9 @@
 
             <div class="row">
 
-                <div class="col-12">
-                    <!-- ACTIONS TABLE -->
+                <div class="col-3 col-md-6 col-sm-12">
+                    <!-- BUCKETS TABLE -->
+
                     <div class="box">
                         <div class="box-header">
                             Buckets
@@ -605,42 +660,58 @@
                                 <thead>
                                     <tr>
                                         <th>Bucket</th>
-                                        <th>Files</th>
-                                        <th>Size</th>
-                                        <th>Last Action</th>
-                                        <th>Modified</th>
-                                        <th>Bucket ID</th>
+                                        <th style="text-align: center;">Files</th>
+                                        <th style="text-align: right;">Size</th>
                                     </tr>
                                 </thead>
-                                <tbody id="ActionsTable">
+                                <tbody id="BucketTable">
                                     <tr>
-                                        <td>Bucket</td>
-                                        <td>
-                                            <div class="order-owner">
-                                            
-                                                <span>Files</span>
-                                            </div>
-                                        </td>
-                                        <td>Size</td>
-                                        <td>
-                                            <span class="action-tag download">
-                                                Action
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-response success">
-                                                <div class="dot"></div>
-                                                <span>Modified</span>
-                                            </div>
-                                        </td>
-                                        <td>Bucket ID</td>
+                                        <td> <i class='bx bx-folder'></i> Bucket</td>
+                                        <td style="text-align: center;">Files</td>
+                                        <td style="text-align: right;">Size</td>
                                     </tr>
 
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    <!-- END ACTIONS TABLE -->
+                    <!-- END BUCKETS TABLE -->
+                </div>
+
+                <div class="col-9 col-md-6 col-sm-12">
+                    <!-- FILES TABLE -->
+
+                    <div class="box">
+                        <div class="box-header">
+                            Files
+                        </div>
+                        <div class="box-body overflow-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left;">File</th>
+                                        <th style="text-align: center;">Size</th>
+                                        <th style="text-align: center;">Date</th>
+                                        <th style="text-align: center;">Download</th>
+                                        <th style="text-align: center;">Delete</th>
+                                        <th style="text-align: right;">ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="FileTable">
+                                    <tr>
+                                        <td style="text-align: left;">File</td>
+                                        <td style="text-align: center;">Size</td>
+                                        <td style="text-align: center;">Date</td>
+                                        <td style="text-align: center;">Download</td>
+                                        <td style="text-align: center;">Delete</td>
+                                        <td style="text-align: right;">ID</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- END FILES TABLE -->
                 </div>
             </div>
         </div>

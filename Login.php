@@ -16,7 +16,7 @@
 
         function Login() {
             const client = new Client()
-                .setEndpoint('http://166.0.134.19/v1') // Your API Endpoint
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
                 .setProject('64511dda13070874dfb6');               // Your project ID
 
             const account = new Account(client);

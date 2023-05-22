@@ -582,7 +582,7 @@ a {
 
 table {
     width: 100%;
-    min-width: 1000px;
+    min-width: 50%;
 }
 
 .order-owner {
@@ -605,7 +605,7 @@ table thead tr {
 
 table th,
 table td {
-    padding: 20px 0;
+    padding: 20px 15px 20px;
     border-bottom: 1px solid var(--border-color);
 }
 

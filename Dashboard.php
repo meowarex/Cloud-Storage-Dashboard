@@ -30,6 +30,7 @@
 
     use Appwrite\Client;
     use Appwrite\Services\Users;
+    use Appwrite\Services\Storage;
 
     $client = new Client();
 
@@ -154,10 +155,11 @@
             });
         }
 
+
         function GetFiles() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6');               // Your project IDsss
+                .setProject('64511dda13070874dfb6'); // Your project ID
 
             const storage = new Storage(client);
 
@@ -271,7 +273,7 @@
                                         </td>
                                         <td>` + Date + `</td>
                                         <td>
-                                            <span class="action-tag ` + Action +  `">
+                                            <span class="action-tag ` + Action + `">
                                                 ` + Action + `
                                             </span>
                                         </td>
@@ -355,14 +357,14 @@
             setTimeout(() => {
                 promise.then(function (response) {
                     let object = response.documents;
-                    
+
                     setTimeout(() => {
                         ActionLogArray[(7 - i)] = response.total;
                         console.log('     ->', response.total, isoDate, i, object);
                         DateArray[(7 - i)] = dayOfWeek;
                     }, 500);
 
-                    
+
 
                 }, function (error) {
                     console.log("  => Get ActionLogs: FAILED -> | " + error);
@@ -419,7 +421,7 @@
 
             let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
             request_chart.render()
-           
+
         }
 
 
