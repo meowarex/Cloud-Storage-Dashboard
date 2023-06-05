@@ -166,7 +166,7 @@
                 storage.listFiles(BucketID).then(function (response) {
                     let x = 0;
                     let size = 0;
-                    let sizeunit = "NULL";
+                    let sizeunit = "|MB";
                     total = total + response.files.length;
                     document.getElementById('TotalFilesCard').innerHTML = total;
 
@@ -247,7 +247,7 @@
                                         <td style="text-align: center;">` + FileExt + `</td>
                                         <td style="text-align: center;">
                                             <span class="action-tag Download">
-                                            <i class='bx bx-download' ></i>
+                                            <btn onclick="Download('` + BucketID + `')"><i class='bx bx-download' ></i></btn>
                                             </span>
                                         </td>
                                         <td style="text-align: center;">
@@ -391,39 +391,8 @@
             }, 1000);
         }
 
-        function MakeReqChart() {
-            let request_options = {
-                series: [{
-                    data: ActionLogArray,
-                }],
-                colors: ['#6ab04c'],
-
-                chart: {
-                    height: 350,
-                    type: 'area',
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                stroke: {
-                    curve: 'smooth',
-
-                },
-
-                xaxis: {
-                    type: 'day',
-                    categories: DateArray,
-                },
-
-                legend: {
-
-                    position: 'top',
-                }
-            }
-
-            let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
-            request_chart.render()
-
+        function Download(BucketID) {
+            console.log(BucketID);
         }
 
 
