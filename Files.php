@@ -53,16 +53,17 @@
         $client = new Client();
 
         $client
-            ->setEndpoint('http://166.0.134.19/v1') // Your API Endpoint
+            ->setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
             ->setProject('64511dda13070874dfb6') // Your project ID
             ->setKey('95fb218c695522b2f45167e2fc2a2770238998350663d0a839af6481fb310a904a3db0a570e16651622852d3f2acf694043fc36ea528153a37dd382d919deae3e887d8b5dc9dd8fe92c1a7d67265885296987692fd732210fb6646d137d3c2dbf6d037fa7b87b8a008a715e10c781b14945c2900ecbb9602ad48521bf6c13d08') // Your secret API key
         ;
 
         $storage = new Storage($client);
-        $result = $storage->listBuckets();
+        $result2 = $storage->listBuckets();
 
-        echo 'window.BucketArray =' . json_encode($result) . ';';
-        echo 'ListBuckets();';
+        $result3 = json_encode($result2);
+        print_r($result3);
+
 
     }
     ?>
@@ -97,11 +98,11 @@
                 console.log("  => Get CheckAuth: Success"); // Success
 
                 GetUserName();
-                GetTotalFiles();
-                GetTotalSize();
+                //GetTotalFiles();
+                //GetTotalSize();
                 GatherBuckets();
                 //GetFiles('FileBin');
-                //GetActions();
+                GetActions();
                 //LoopRequests();
 
             }, function (error) {
@@ -136,66 +137,68 @@
         }
 
 
-        function GetTotalSize() {
-            const client = new Client()
-                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6');               // Your project ID
-
-            const storage = new Storage(client);
-
-            let totalSize = 0;
-            storage.listFiles("FileBin").then(function (response) {
-                response.files.forEach(function (file) {
-                    totalSize += file.sizeOriginal / 1000000;
-                });
-
-                document.getElementById('TotalSizeCard').innerHTML = totalSize.toFixed(2) + "|MB";
-                console.log("  => Get TotalSize: Success"); // Success
-
-            }, function (error) {
-                console.log("  => Get TotalSize: FAILED -> | " + error);
-            });
-        }
 
         function GatherBuckets() {
-            <?php GetBuckets(); ?>
+
+            ListBuckets();
         }
 
         function ListBuckets() {
-            console.log(window.BucketArray.buckets);
+
+            var BucketArrayPHP = JSON.stringify(<?php GetBuckets(); ?>);
+            var BucketArray = JSON.parse(BucketArrayPHP);
+            console.log(BucketArray);
             let i = 0;
+            let total = 0;
+            let totalsize = 0;
 
             document.getElementById('BucketTable').innerHTML = ' ';
-            while (i <= window.BucketArray.buckets.length - 1) {
-                let BucketName = window.BucketArray.buckets[i].name;
-                let BucketID = window.BucketArray.buckets[i].$id;
-                document.getElementById('BucketTable').insertAdjacentHTML('beforeend',                                    
-                                    (`<tr>
+            while (i <= BucketArray.total - 1) {
+                let BucketName = BucketArray.buckets[i].name;
+                let BucketID = BucketArray.buckets[i].$id;
+
+                const client = new Client()
+                    .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                    .setProject('64511dda13070874dfb6');               // Your project ID
+
+                const storage = new Storage(client);
+
+                storage.listFiles(BucketID).then(function (response) {
+                    let x = 0;
+                    let size = 0;
+                    let sizeunit = "NULL";
+                    total = total + response.files.length;
+                    document.getElementById('TotalFilesCard').innerHTML = total;
+
+                    while (x <= response.files.length - 1) {
+                        console.log(response.files[x].sizeOriginal + ' | ' + x);
+                        size = size + (response.files[x].sizeOriginal) / 1000000;
+                        totalsize = totalsize + (response.files[x].sizeOriginal);
+                        document.getElementById('TotalSizeCard').innerHTML = (totalsize / 1000000).toFixed(2) + sizeunit;
+                        sizeunit = "|MB";
+                        x = x + 1;
+                    }
+                    document.getElementById('BucketTable').insertAdjacentHTML('beforeend',
+                    (`<tr>
                                         <td> <i class='bx bx-folder'></i> <btn onclick="GetFiles('` + BucketID + `')">` + BucketName + `</btn> </td>
-                                        <td style="text-align: center;">Files</td>
-                                        <td style="text-align: right;">Size</td>
+                                        <td style="text-align: center;">` + response.total + `</td>
+                                        <td style="text-align: right;">` + size.toFixed(2) + sizeunit + `</td>
                                     </tr>`));
-               
+
+                    console.log("  => Get TotalFiles: Success"); // Success
+
+                }, function (error) {
+                    console.log("  => Get TotalFiles: FAILED -> | " + error);
+                });
+
+            
+
                 i = i + 1;
             }
+            
         }
 
-        function GetTotalFiles() {
-            const client = new Client()
-                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6');               // Your project ID
 
-            const storage = new Storage(client);
-
-            storage.listFiles('FileBin').then(function (response) {
-
-                document.getElementById('TotalFilesCard').innerHTML = response.total;
-                console.log("  => Get TotalFiles: Success"); // Success
-
-            }, function (error) {
-                console.log("  => Get TotalFiles: FAILED -> | " + error);
-            });
-        }
 
         function GetFiles(BucketID) {
             const client = new Client()
@@ -205,9 +208,9 @@
             const storage = new Storage(client);
 
             storage.listFiles(BucketID).then(function (response) {
-                
+
                 let FileArray = response.files;
-                
+
 
                 let i = 0;
                 document.getElementById('FileTable').innerHTML = '';
@@ -238,20 +241,28 @@
                     }
 
                     document.getElementById('FileTable').insertAdjacentHTML('beforeend',
-                                    (`<tr>
+                        (`<tr>
                                         <td style="text-align: left;">` + FileName + `</td>
-                                        <td style="text-align: center;">` + FileSize + SizeUnit + `</td>
+                                        <td style="text-align: center;">` + FileSize.toFixed(2) + SizeUnit + `</td>
                                         <td style="text-align: center;">` + FileExt + `</td>
-                                        <td style="text-align: center;">Download</td>
-                                        <td style="text-align: center;">Delete</td>
+                                        <td style="text-align: center;">
+                                            <span class="action-tag Download">
+                                            <i class='bx bx-download' ></i>
+                                            </span>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span class="action-tag Delete">
+                                            <i class='bx bx-trash' ></i>
+                                            </span>
+                                        </td>
                                         <td style="text-align: right;">` + FileID + `</td>
                                     </tr>`));
-                                    
+
                     i = i + 1;
                 }
 
                 console.log("  => Get LargeFiles: Success"); // Success
-                
+
 
                 //MakeExtChart();
 
@@ -261,27 +272,7 @@
             });
         }
 
-        function MakeExtChart() {
-            let extension_options = {
-                series: FileExtArray,
-                labels: ['exe', 'png'],
-                chart: {
-                    height: 350,
-                    type: 'donut',
-                    width: 340,
-                },
-                dataLabels: {
-                    enabled: true,
-
-                },
-                colors: ['#6ab04c', '#2980b9', '#f39c12', '#d35400']
-            }
-
-            let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
-            extension_chart.render()
-
-
-        }
+        
 
         let ActionCount = 'NULL';
 
@@ -304,41 +295,6 @@
                 let ActionArray = response.documents;
                 ActionCount = ActionArray.length;
 
-                document.getElementById('ActionsTable').innerHTML = '';
-                while (i <= ActionArray.length - 1) {
-                    let File = ActionArray[i].File;
-                    let User = ActionArray[i].User;
-                    let Date = ActionArray[i].Date;
-                    let Action = ActionArray[i].Action;
-                    let Response = ActionArray[i].Response;
-                    let Source = ActionArray[i].Source;
-
-                    document.getElementById('ActionsTable').insertAdjacentHTML('beforeend',
-                        (`<tr>
-                                        <td>` + File + `</td>
-                                        <td>
-                                            <div class="order-owner">
-                                                <img src="./images/user-image-2.png" alt="user image">
-                                                <span>` + User + `</span>
-                                            </div>
-                                        </td>
-                                        <td>` + Date + `</td>
-                                        <td>
-                                            <span class="action-tag download">
-                                                ` + Action + `
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-response success">
-                                                <div class="dot"></div>
-                                                <span>` + Response + `</span>
-                                            </div>
-                                        </td>
-                                        <td>` + Source + `</td>
-                                    </tr>`)
-                    );
-                    i = i + 1
-                }
 
                 document.getElementById('TotalActionsCard').innerHTML = ActionCount;
                 console.log("  => Get Actions: Success"); // Success
