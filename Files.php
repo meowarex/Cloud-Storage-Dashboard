@@ -73,7 +73,7 @@
 
     <!-- SCRIPTS -->
     <script>
-        const { Client, Account, ID, Storage, Query, Databases } = Appwrite;
+        const { Client, Account, ID, Storage, Query, Databases, Locale } = Appwrite;
 
         let FileExtArray = [0, 0];
 
@@ -179,7 +179,7 @@
                         x = x + 1;
                     }
                     document.getElementById('BucketTable').insertAdjacentHTML('beforeend',
-                    (`<tr>
+                        (`<tr>
                                         <td> <i class='bx bx-folder'></i> <btn onclick="GetFiles('` + BucketID + `')">` + BucketName + `</btn> </td>
                                         <td style="text-align: center;">` + response.total + `</td>
                                         <td style="text-align: right;">` + size.toFixed(2) + sizeunit + `</td>
@@ -191,11 +191,11 @@
                     console.log("  => Get TotalFiles: FAILED -> | " + error);
                 });
 
-            
+
 
                 i = i + 1;
             }
-            
+
         }
 
 
@@ -247,16 +247,24 @@
                                         <td style="text-align: center;">` + FileExt + `</td>
                                         <td style="text-align: center;">
                                             <span class="action-tag Download">
-                                            <btn onclick="Download('` + BucketID + `')"><i class='bx bx-download' ></i></btn>
+                                            <btn onclick="Download('` + BucketID + `', '` + FileID + `', '` + FileName + `')"><i class='bx bx-download' ></i></btn>
                                             </span>
                                         </td>
                                         <td style="text-align: center;">
                                             <span class="action-tag Delete">
-                                            <i class='bx bx-trash' ></i>
+                                            <btn onclick="Delete('` + BucketID + `', '` + FileID + `', '` + FileName + `')"><i class='bx bx-trash' ></i></btn>
                                             </span>
                                         </td>
                                         <td style="text-align: right;">` + FileID + `</td>
                                     </tr>`));
+
+                    document.getElementById('FileHeader').innerHTML = (
+                        `Files
+                            <input type="file" id="uploader" oninput="Upload('` + BucketID + `')" hidden />
+                            <span class="action-tag Upload">
+                                <label for="uploader"><i class='bx bx-upload' ></i></label>
+                            </span>`
+                    );
 
                     i = i + 1;
                 }
@@ -272,7 +280,7 @@
             });
         }
 
-        
+
 
         let ActionCount = 'NULL';
 
@@ -391,8 +399,127 @@
             }, 1000);
         }
 
-        function Download(BucketID) {
-            console.log(BucketID);
+        function Download(BucketID, FileID, FileName) {
+            //console.log(BucketID + ' | ' + FileID);
+
+            const client = new Client();
+
+            const storage = new Storage(client);
+
+            client
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6') // Your project ID
+                ;
+
+            const result = storage.getFileDownload(BucketID, FileID);
+
+            console.log(result); // File URL
+            window.open(result, '_blank');
+            LogAction(FileName, 'Download', 'Success');
+        }
+
+        function Delete(BucketID, FileID, FileName) {
+
+
+            const client = new Client();
+
+            const storage = new Storage(client);
+
+            client
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6') // Your project ID
+                ;
+
+            const result = storage.deleteFile(BucketID, FileID);
+
+            console.log(result); // File URL
+
+            result.then(function (response) {
+                console.log(response); // Success
+                GetFiles(BucketID);
+                LogAction(FileName, 'Delete', 'Success');
+            }, function (error) {
+                console.log(error); // Failure
+                LogAction(FileName, 'Delete', 'Failed');
+            });
+        }
+
+        function Upload(BucketID) {
+            let FileN = document.getElementById('uploader').files[0].name;
+            const client = new Client();
+
+            const storage = new Storage(client);
+
+            client
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6') // Your project ID
+                ;
+
+            const promise = storage.createFile(
+                BucketID,
+                ID.unique(),
+
+                document.getElementById('uploader').files[0]
+            );
+
+            promise.then(function (response) {
+                console.log(response); // Success
+                GetFiles(BucketID);
+                LogAction(FileN, 'Upload', 'Success');
+            }, function (error) {
+                console.log(error); // Failure
+                LogAction(FileN, 'Upload', 'Failed');
+            });
+        }
+
+        function LogAction(FileName, Action, Response) {
+
+            var today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            var isoDate = `${year}-${month}-${day}`;
+            let iDate = isoDate;
+
+            const client = new Client();
+
+            const locale = new Locale(client);
+
+            const databases = new Databases(client);
+
+            client
+                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                .setProject('64511dda13070874dfb6') // Your project ID
+                ;
+
+            const Lpromise = locale.get();
+
+            Lpromise.then(function (response) {
+                console.log(response); // Success
+                let Source = response.ip;
+
+                const Apromise = databases.createDocument('Dashboard', 'ActionLog', ID.unique(),
+                    {
+                        "File": FileName,
+                        "User": document.getElementById('UserName').innerHTML,
+                        "Date": iDate,
+                        "Action": Action,
+                        "Response": Response,
+                        "Source": Source,
+                    }
+                );
+
+                Apromise.then(function (response) {
+                    console.log(response); // Success
+                    console.log(Source);
+                }, function (error) {
+                    console.log(error); // Failure
+                    console.log(Source);
+                });
+
+            }, function (error) {
+                console.log(error); // Failure
+            });
         }
 
 
@@ -607,7 +734,7 @@
                     <!-- FILES TABLE -->
 
                     <div class="box">
-                        <div class="box-header">
+                        <div id="FileHeader" class="box-header">
                             Files
                         </div>
                         <div class="box-body overflow-scroll">

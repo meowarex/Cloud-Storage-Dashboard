@@ -246,7 +246,7 @@
                 'ActionLog',
                 [
                     Query.select(['File', 'User', 'Date', 'Action', 'Response', 'Source']),
-                    Query.orderDesc("Date")
+                    Query.orderDesc("$createdAt")
                 ]
             ).then(function (response) {
                 let i = 0;
@@ -254,7 +254,7 @@
                 ActionCount = ActionArray.length;
 
                 document.getElementById('ActionsTable').innerHTML = '';
-                while (i <= ActionArray.length - 1) {
+                while (i <= ActionArray.length - 1 && i < 10) {
                     let File = ActionArray[i].File;
                     let User = ActionArray[i].User;
                     let Date = ActionArray[i].Date;
