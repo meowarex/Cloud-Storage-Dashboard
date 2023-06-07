@@ -18,27 +18,23 @@ document.querySelectorAll('.sidebar-submenu').forEach(e => {
 
 
 
-
-
-setDarkChart = (dark) => {
-    let theme = {
-        theme: {
-            mode: dark ? 'dark' : 'light'
-        }
-    }
-
-    request_chart.updateOptions(theme)
-
-}
-
 // DARK MODE TOGGLE
 let darkmode_toggle = document.querySelector('#darkmode-toggle')
+
+if (localStorage.getItem('dark-mode') == "true") {
+    document.querySelector('body').classList.toggle('dark')
+    darkmode_toggle.querySelector('.darkmode-switch').classList.add('active')
+
+} else if (localStorage.getItem('dark-mode') == "false") {
+    document.querySelector('body').classList.remove('dark')
+    darkmode_toggle.querySelector('.darkmode-switch').classList.remove('active')
+}
 
 darkmode_toggle.onclick = (e) => {
     e.preventDefault()
     document.querySelector('body').classList.toggle('dark')
     darkmode_toggle.querySelector('.darkmode-switch').classList.toggle('active')
-    setDarkChart(document.querySelector('body').classList.contains('dark'))
+    localStorage.setItem('dark-mode', document.querySelector('body').classList.contains('dark'));
 }
 
 let overlay = document.querySelector('.overlay')

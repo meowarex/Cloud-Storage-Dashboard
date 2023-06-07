@@ -29,6 +29,7 @@
     require __DIR__ . '/vendor/autoload.php';
 
     use Appwrite\Client;
+    use Appwrite\Query;
     use Appwrite\Services\Users;
     use Appwrite\Services\Storage;
 
@@ -59,7 +60,11 @@
         ;
 
         $storage = new Storage($client);
-        $result2 = $storage->listBuckets();
+        $result2 = $storage->listBuckets(
+            [
+                Query::orderAsc("name")
+            ]
+        );
 
         $result3 = json_encode($result2);
         print_r($result3);
@@ -98,12 +103,9 @@
                 console.log("  => Get CheckAuth: Success"); // Success
 
                 GetUserName();
-                //GetTotalFiles();
-                //GetTotalSize();
-                GatherBuckets();
-                //GetFiles('FileBin');
+                ListBuckets();
                 GetActions();
-                //LoopRequests();
+
 
             }, function (error) {
                 console.log(error); // Failure
@@ -137,17 +139,10 @@
         }
 
 
-
-        function GatherBuckets() {
-
-            ListBuckets();
-        }
-
         function ListBuckets() {
 
             var BucketArrayPHP = JSON.stringify(<?php GetBuckets(); ?>);
             var BucketArray = JSON.parse(BucketArrayPHP);
-            console.log(BucketArray);
             let i = 0;
             let total = 0;
             let totalsize = 0;
@@ -171,7 +166,6 @@
                     document.getElementById('TotalFilesCard').innerHTML = total;
 
                     while (x <= response.files.length - 1) {
-                        console.log(response.files[x].sizeOriginal + ' | ' + x);
                         size = size + (response.files[x].sizeOriginal) / 1000000;
                         totalsize = totalsize + (response.files[x].sizeOriginal);
                         document.getElementById('TotalSizeCard').innerHTML = (totalsize / 1000000).toFixed(2) + sizeunit;
@@ -185,10 +179,10 @@
                                         <td style="text-align: right;">` + size.toFixed(2) + sizeunit + `</td>
                                     </tr>`));
 
-                    console.log("  => Get TotalFiles: Success"); // Success
+                    console.log("  => Get Buckets: Success"); // Success
 
                 }, function (error) {
-                    console.log("  => Get TotalFiles: FAILED -> | " + error);
+                    console.log("  => Get Buckets: FAILED -> | " + error);
                 });
 
 
@@ -218,7 +212,6 @@
                     let FileName = FileArray[i].name;
                     let FileSize = 0;
                     let FileExt = "NULL";
-                    //let FileDate =FileArray[i].$created;
                     let FileID = FileArray[i].$id;
                     let SizeUnit = "NULL";
 
@@ -269,14 +262,10 @@
                     i = i + 1;
                 }
 
-                console.log("  => Get LargeFiles: Success"); // Success
-
-
-                //MakeExtChart();
-
+                console.log("  => Get Files: Success"); // Success
 
             }, function (error) {
-                console.log("  => Get LargeFiles: FAILED -> | " + error);
+                console.log("  => Get Files: FAILED -> | " + error);
             });
         }
 
@@ -342,65 +331,8 @@
         let ActionLogArray = new Array;
         let DateArray = new Array;
 
-        async function GetRequests(i) {
-
-            const client = new Client()
-                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6'); // Your project ID
-
-            const databases = await new Databases(client);
-
-            var today = new Date();
-            var options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-            var DaysAgo = new Date(today.getTime() - (i * 24 * 60 * 60 * 1000));
-            const year = DaysAgo.getFullYear();
-            const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(DaysAgo);
-            const month = String(DaysAgo.getMonth() + 1).padStart(2, '0');
-            const day = String(DaysAgo.getDate()).padStart(2, '0');
-            var isoDate = `${year}-${month}-${day}`;
-            var Day = today.getDay();
-
-
-
-            let promise = databases.listDocuments(
-                'Dashboard',
-                'ActionLog',
-                [
-                    Query.equal('Date', [isoDate])
-                ]);
-
-            setTimeout(() => {
-                promise.then(function (response) {
-                    let object = response.documents;
-                    console.log('     ->', response.total, isoDate, i, object);
-                    ActionLogArray[(7 - i)] = response.total;
-                    DateArray[(7 - i)] = dayOfWeek;
-
-                }, function (error) {
-                    console.log("  => Get ActionLogs: FAILED -> | " + error);
-                });
-                setTimeout(() => {
-
-                }, 500);
-            }, 100);
-
-        }
-
-        async function LoopRequests() {
-            let i = 7;
-            while (i > -1) {
-                GetRequests(i);
-                i = i - 1;
-            }
-
-            setTimeout(() => {
-                MakeReqChart();
-                console.log('  => Get ActionLogs: Success')
-            }, 1000);
-        }
 
         function Download(BucketID, FileID, FileName) {
-            //console.log(BucketID + ' | ' + FileID);
 
             const client = new Client();
 
@@ -413,7 +345,6 @@
 
             const result = storage.getFileDownload(BucketID, FileID);
 
-            console.log(result); // File URL
             window.open(result, '_blank');
             LogAction(FileName, 'Download', 'Success');
         }
@@ -435,7 +366,6 @@
             console.log(result); // File URL
 
             result.then(function (response) {
-                console.log(response); // Success
                 GetFiles(BucketID);
                 LogAction(FileName, 'Delete', 'Success');
             }, function (error) {
@@ -463,7 +393,6 @@
             );
 
             promise.then(function (response) {
-                console.log(response); // Success
                 GetFiles(BucketID);
                 LogAction(FileN, 'Upload', 'Success');
             }, function (error) {
@@ -495,7 +424,6 @@
             const Lpromise = locale.get();
 
             Lpromise.then(function (response) {
-                console.log(response); // Success
                 let Source = response.ip;
 
                 const Apromise = databases.createDocument('Dashboard', 'ActionLog', ID.unique(),
@@ -511,10 +439,10 @@
 
                 Apromise.then(function (response) {
                     console.log(response); // Success
-                    console.log(Source);
+
                 }, function (error) {
                     console.log(error); // Failure
-                    console.log(Source);
+
                 });
 
             }, function (error) {

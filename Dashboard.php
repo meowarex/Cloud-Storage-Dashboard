@@ -29,6 +29,7 @@
     require __DIR__ . '/vendor/autoload.php';
 
     use Appwrite\Client;
+    use Appwrite\Query;
     use Appwrite\Services\Users;
     use Appwrite\Services\Storage;
 
@@ -47,6 +48,29 @@
     echo 'let TotalUsers = ' . json_encode($result) . '';
     echo '</script>';
 
+    function GetBuckets()
+    {
+
+        $client = new Client();
+
+        $client
+            ->setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+            ->setProject('64511dda13070874dfb6') // Your project ID
+            ->setKey('95fb218c695522b2f45167e2fc2a2770238998350663d0a839af6481fb310a904a3db0a570e16651622852d3f2acf694043fc36ea528153a37dd382d919deae3e887d8b5dc9dd8fe92c1a7d67265885296987692fd732210fb6646d137d3c2dbf6d037fa7b87b8a008a715e10c781b14945c2900ecbb9602ad48521bf6c13d08') // Your secret API key
+        ;
+
+        $storage = new Storage($client);
+        $result2 = $storage->listBuckets(
+            [
+                Query::orderAsc("name")
+            ]
+        );
+
+        $result3 = json_encode($result2);
+        print_r($result3);
+
+
+    }
     ?>
 
     <!-- END PHP SCRIPTS -->
@@ -56,7 +80,9 @@
     <script>
         const { Client, Account, ID, Storage, Query, Databases } = Appwrite;
 
-        let FileExtArray = [0, 0];
+        let FileExtArray = [];
+        let done = [];
+        let BucketIDArray = [];
 
         CheckAuth();
 
@@ -79,9 +105,7 @@
                 console.log("  => Get CheckAuth: Success"); // Success
 
                 GetUserName();
-                GetTotalFiles();
-                GetTotalSize();
-                GetFiles();
+                ListBuckets();
                 GetActions();
                 LoopRequests();
 
@@ -117,102 +141,147 @@
         }
 
 
-        function GetTotalSize() {
-            const client = new Client()
-                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6');               // Your project ID
+        function ListBuckets() {
 
-            const storage = new Storage(client);
+            var BucketArrayPHP = JSON.stringify(<?php GetBuckets(); ?>);
+            var BucketArray = JSON.parse(BucketArrayPHP);
+            let i = 0;
+            let total = 0;
+            let totalsize = 0;
 
-            let totalSize = 0;
-            storage.listFiles("FileBin").then(function (response) {
-                response.files.forEach(function (file) {
-                    totalSize += file.sizeOriginal / 1000000;
+
+            while (i < BucketArray.total) {
+                let BucketName = BucketArray.buckets[i].name;
+                let BucketID = BucketArray.buckets[i].$id;
+                BucketIDArray.push(BucketID);
+
+                const client = new Client()
+                    .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
+                    .setProject('64511dda13070874dfb6');               // Your project ID
+
+                const storage = new Storage(client);
+
+                storage.listFiles(BucketID, [Query.orderAsc("name")]).then(function (response) {
+                    let x = 0;
+                    let size = 0;
+                    let sizeunit = "|MB";
+                    total = total + response.files.length;
+                    document.getElementById('TotalFilesCard').innerHTML = total;
+
+                    while (x <= response.files.length - 1) {
+                        size = size + (response.files[x].sizeOriginal) / 1000000;
+                        totalsize = totalsize + (response.files[x].sizeOriginal);
+                        document.getElementById('TotalSizeCard').innerHTML = (totalsize / 1000000).toFixed(2) + sizeunit;
+                        sizeunit = "|MB";
+                        x = x + 1;
+                    }
+
+                    console.log("  => Get Buckets: Success"); // Success
+
+                }, function (error) {
+                    console.log("  => Get Buckets: FAILED -> | " + error);
                 });
 
-                document.getElementById('TotalSizeCard').innerHTML = totalSize.toFixed(2) + "|MB";
-                console.log("  => Get TotalSize: Success"); // Success
 
-            }, function (error) {
-                console.log("  => Get TotalSize: FAILED -> | " + error);
-            });
+
+                i = i + 1;
+            }
+            console.log("List | " + BucketIDArray)
+            //GetFiles(); //Should be uncommented when completing below TODO:
         }
 
-        function GetTotalFiles() {
-            const client = new Client()
-                .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
-                .setProject('64511dda13070874dfb6');               // Your project ID
+        //TODO: Compile all files in all buckets into One array and then pouplate the pie chart and Large File list.
 
-            const storage = new Storage(client);
-
-            storage.listFiles('FileBin').then(function (response) {
-
-                document.getElementById('TotalFilesCard').innerHTML = response.total;
-                console.log("  => Get TotalFiles: Success"); // Success
-
-            }, function (error) {
-                console.log("  => Get TotalFiles: FAILED -> | " + error);
-            });
-        }
-
-
-        function GetFiles() {
+        /*function GetFiles() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
                 .setProject('64511dda13070874dfb6'); // Your project ID
 
             const storage = new Storage(client);
+            let i = 0;
+            let y = 0;
+            let x = 0;
+            document.getElementById('LargeFiles').innerHTML = '';
+            let FileArray = [];
+            let TempFileArray = [];
 
-            storage.listFiles('FileBin').then(function (response) {
-                let FileArray = response.files;
-                FileExtArray = [0, 0];
+            while (i < BucketIDArray.length) {
+                storage.listFiles(BucketIDArray[i]).then(function (response) {
+                    TempFileArray = response.files;
+                    console.log(TempFileArray + " | " + BucketIDArray[i])
+                    FileArray.push(TempFileArray);
 
-                let i = 0;
-                document.getElementById('LargeFiles').innerHTML = '';
-                while (i <= FileArray.length - 1) {
-                    let FileName = FileArray[i].name;
-                    let FileSize = 0;
-                    let FileExt = "NULL";
-                    let SizeUnit = "NULL";
-
-                    if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 0) {
-                        FileSize = (FileArray[i].sizeOriginal / 1000000) * 1000;
-                        SizeUnit = "|KB";
-                    }
-                    else if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 1) {
-                        FileSize = (FileArray[i].sizeOriginal / 1000000);
-                        SizeUnit = "|MB";
-                    }
+                    console.log("  => Get LargeFiles: Success"); // Success
 
 
-                    if (FileArray[i].name.includes(".exe")) {
-                        FileExtArray[0] = FileExtArray[0] + 1;
-                        FileExt = "Executable";
-                    } else if (FileArray[i].name.includes(".png")) {
-                        FileExtArray[1] = FileExtArray[1] + 1;
-                        FileExt = "Image File";
-                    }
 
-                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
+                }, function (error) {
+                    console.log("  => Get LargeFiles: FAILED -> | " + error);
+                });
 
-                    i = i + 1;
+                i = i + 1;
+                x = x + 1;
+            }
+            
+
+            while (x < FileArray.length) {
+                let FileName = FileArray[x].name;
+                let FileSize = 0;
+                let FileExt = "NULL";
+                let SizeUnit = "NULL";
+
+                if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 0) {
+                    FileSize = (FileArray[x].sizeOriginal / 1000000) * 1000;
+                    SizeUnit = "|KB";
+                }
+                else if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 1) {
+                    FileSize = (FileArray[x].sizeOriginal / 1000000);
+                    SizeUnit = "|MB";
                 }
 
-                console.log("  => Get LargeFiles: Success"); // Success
+
+                setTimeout(() => {
 
 
-                MakeExtChart();
+                    let extensions = ['exe', 'png', 'pdf', 'txt'];
+                    for (let j = 0; j < extensions.length; j++) {
 
+                        if (FileName.includes("." + extensions[j])) {
 
-            }, function (error) {
-                console.log("  => Get LargeFiles: FAILED -> | " + error);
-            });
-        }
+                            if (!done.includes("." + extensions[j])) {
+                                FileExtArray.push(0); // add a new index with the value of 0
+                                done.push("." + extensions[j]);
+                                FileExtArray[j] = FileExtArray[j] + 1;
+                                FileExt = extensions[j];
+                                console.log("New Ext")
+
+                            }
+                            else if (done.includes("." + extensions[j])) {
+                                FileExtArray[j] = FileExtArray[j] + 1;
+                                FileExt = extensions[j];
+                                break;
+                            }
+                            console.log(done)
+                            console.log(FileExtArray)
+                        }
+
+                    }
+                    MakeExtChart();
+                }, 500);
+
+                if (y < 6) {
+                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
+                }
+                y = y + 1;
+                x = x + 1;
+            }
+
+        }*/
 
         function MakeExtChart() {
             let extension_options = {
                 series: FileExtArray,
-                labels: ['exe', 'png'],
+                labels: done,
                 chart: {
                     height: 350,
                     type: 'donut',
@@ -291,13 +360,6 @@
 
                 document.getElementById('TotalActionsCard').innerHTML = ActionCount;
                 console.log("  => Get Actions: Success"); // Success
-
-
-
-                setTimeout(() => {
-                    console.log("[!] => END <= [!]");
-                    RequestDivider();
-                }, 1000);
 
 
             }, function (error) {
@@ -420,8 +482,16 @@
             }
 
             let request_chart = new ApexCharts(document.querySelector("#request-chart"), request_options)
-            request_chart.render()
 
+            setTimeout(() => {
+                request_chart.render()
+                console.log('  => Chart Render: Success')
+            }, 1000);
+
+            setTimeout(() => {
+                console.log("[!] => END <= [!]");
+                RequestDivider();
+            }, 1000);
         }
 
 
