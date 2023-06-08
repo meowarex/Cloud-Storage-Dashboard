@@ -166,17 +166,56 @@
                     document.getElementById('TotalFilesCard').innerHTML = total;
 
                     while (x <= response.files.length - 1) {
-                        size = size + (response.files[x].sizeOriginal) / 1000000;
+                        size = size + response.files[x].sizeOriginal;
                         totalsize = totalsize + (response.files[x].sizeOriginal);
-                        document.getElementById('TotalSizeCard').innerHTML = (totalsize / 1000000).toFixed(2) + sizeunit;
-                        sizeunit = "|MB";
                         x = x + 1;
                     }
+
+                    // Calculate the size in appropriate units
+                    let FileSize = 0;
+                    let SizeUnit = "NULL";
+
+                    if (totalsize < 1024) {
+                        FileSize = totalsize;
+                        SizeUnit = "|B";
+                    } else if (totalsize < 1048576) {
+                        FileSize = (totalsize / 1024).toFixed(2);
+                        SizeUnit = "|KB";
+                    } else if (totalsize < 1073741824) {
+                        FileSize = (totalsize / 1048576).toFixed(2);
+                        SizeUnit = "|MB";
+                    } else if (totalsize < 1099511627776) {
+                        FileSize = (totalsize / 1073741824).toFixed(2);
+                        SizeUnit = "|GB";
+                    } else {
+                        FileSize = (totalsize / 1099511627776).toFixed(2);
+                        SizeUnit = "|TB";
+                    }
+
+                    if (size < 1024) {
+                        size = size;
+                        sizeunit = "|B";
+                    } else if (size < 1048576) {
+                        size = (size / 1024).toFixed(2);
+                        sizeunit = "|KB";
+                    } else if (size < 1073741824) {
+                        size = (size / 1048576).toFixed(2);
+                        sizeunit = "|MB";
+                    } else if (size < 1099511627776) {
+                        size = (size / 1073741824).toFixed(2);
+                        sizeunit = "|GB";
+                    } else {
+                        size = (size / 1099511627776).toFixed(2);
+                        sizeunit = "|TB";
+                    }
+
+                    document.getElementById('TotalSizeCard').innerHTML = FileSize + SizeUnit;
+
                     document.getElementById('BucketTable').insertAdjacentHTML('beforeend',
                         (`<tr>
                                         <td> <i class='bx bx-folder'></i> <btn onclick="GetFiles('` + BucketID + `')">` + BucketName + `</btn> </td>
                                         <td style="text-align: center;">` + response.total + `</td>
-                                        <td style="text-align: right;">` + size.toFixed(2) + sizeunit + `</td>
+                                        <td style="text-align: right;">` + size + sizeunit + `</td>
                                     </tr>`));
 
                     console.log("  => Get Buckets: Success"); // Success
@@ -215,13 +254,21 @@
                     let FileID = FileArray[i].$id;
                     let SizeUnit = "NULL";
 
-                    if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 0) {
-                        FileSize = (FileArray[i].sizeOriginal / 1000000) * 1000;
+                    if (FileArray[i].sizeOriginal < 1024) {
+                        FileSize = FileArray[i].sizeOriginal;
+                        SizeUnit = "|B";
+                    } else if (FileArray[i].sizeOriginal < 1048576) {
+                        FileSize = (FileArray[i].sizeOriginal / 1024).toFixed(2);
                         SizeUnit = "|KB";
-                    }
-                    else if (Math.trunc(FileArray[i].sizeOriginal / 1000000) === 1) {
-                        FileSize = (FileArray[i].sizeOriginal / 1000000);
+                    } else if (FileArray[i].sizeOriginal < 1073741824) {
+                        FileSize = (FileArray[i].sizeOriginal / 1048576).toFixed(2);
                         SizeUnit = "|MB";
+                    } else if (FileArray[i].sizeOriginal < 1099511627776) {
+                        FileSize = (FileArray[i].sizeOriginal / 1073741824).toFixed(2);
+                        SizeUnit = "|GB";
+                    } else {
+                        FileSize = (FileArray[i].sizeOriginal / 1099511627776).toFixed(2);
+                        SizeUnit = "|TB";
                     }
 
 
@@ -236,7 +283,7 @@
                     document.getElementById('FileTable').insertAdjacentHTML('beforeend',
                         (`<tr>
                                         <td style="text-align: left;">` + FileName + `</td>
-                                        <td style="text-align: center;">` + FileSize.toFixed(2) + SizeUnit + `</td>
+                                        <td style="text-align: center;">` + FileSize + SizeUnit + `</td>
                                         <td style="text-align: center;">` + FileExt + `</td>
                                         <td style="text-align: center;">
                                             <span class="action-tag Download">
@@ -255,7 +302,10 @@
                         `Files
                             <input type="file" id="uploader" oninput="Upload('` + BucketID + `')" hidden />
                             <span class="action-tag Upload">
-                                <label for="uploader"><i class='bx bx-upload' ></i></label>
+                                <span id="UploadIcon"> <label for="uploader"> <i class='bx bx-upload'></i> </label> </span>
+                                <span id="UploadingIcon" hidden> <i class='bx bx-loader-alt bx-spin'></i> </span>
+                                <span id="SuccessIcon" hidden> <i class='bx bx-check-circle bx-flashing'></i> </span>
+                                <span id="FailedIcon" hidden> <i class='bx bx-error bx-flashing'></i> </span>
                             </span>`
                     );
 
@@ -366,10 +416,13 @@
             console.log(result); // File URL
 
             result.then(function (response) {
+                ListBuckets();
                 GetFiles(BucketID);
                 LogAction(FileName, 'Delete', 'Success');
             }, function (error) {
                 console.log(error); // Failure
+                ListBuckets();
+                GetFiles(BucketID);
                 LogAction(FileName, 'Delete', 'Failed');
             });
         }
@@ -385,6 +438,9 @@
                 .setProject('64511dda13070874dfb6') // Your project ID
                 ;
 
+            document.getElementById('UploadIcon').hidden = true;
+            document.getElementById('UploadingIcon').hidden = false;
+
             const promise = storage.createFile(
                 BucketID,
                 ID.unique(),
@@ -392,12 +448,26 @@
                 document.getElementById('uploader').files[0]
             );
 
+
             promise.then(function (response) {
-                GetFiles(BucketID);
-                LogAction(FileN, 'Upload', 'Success');
+                setTimeout(() => {
+                    ListBuckets();
+                    GetFiles(BucketID);
+                    LogAction(FileN, 'Upload', 'Success');
+                }, 5000);
+
+                document.getElementById('UploadingIcon').hidden = true;
+                document.getElementById('SuccessIcon').hidden = false;
             }, function (error) {
-                console.log(error); // Failure
-                LogAction(FileN, 'Upload', 'Failed');
+                setTimeout(() => {
+                    console.log(error); // Failure
+                    ListBuckets();
+                    GetFiles(BucketID);
+                    LogAction(FileN, 'Upload', 'Failed');
+                }, 5000);
+
+                document.getElementById('UploadingIcon').hidden = true;
+                document.getElementById('FailedIcon').hidden = false;
             });
         }
 

@@ -143,6 +143,10 @@
 
         function ListBuckets() {
 
+            FileExtArray = [];
+            done = [];
+            //BucketIDArray = [];
+
             var BucketArrayPHP = JSON.stringify(<?php GetBuckets(); ?>);
             var BucketArray = JSON.parse(BucketArrayPHP);
             let i = 0;
@@ -171,10 +175,31 @@
                     while (x <= response.files.length - 1) {
                         size = size + (response.files[x].sizeOriginal) / 1000000;
                         totalsize = totalsize + (response.files[x].sizeOriginal);
-                        document.getElementById('TotalSizeCard').innerHTML = (totalsize / 1000000).toFixed(2) + sizeunit;
-                        sizeunit = "|MB";
                         x = x + 1;
                     }
+
+                    // Calculate the size in appropriate units
+                    let FileSize = 0;
+                    let SizeUnit = "NULL";
+
+                    if (totalsize < 1024) {
+                        FileSize = totalsize;
+                        SizeUnit = "|B";
+                    } else if (totalsize < 1048576) {
+                        FileSize = (totalsize / 1024).toFixed(2);
+                        SizeUnit = "|KB";
+                    } else if (totalsize < 1073741824) {
+                        FileSize = (totalsize / 1048576).toFixed(2);
+                        SizeUnit = "|MB";
+                    } else if (totalsize < 1099511627776) {
+                        FileSize = (totalsize / 1073741824).toFixed(2);
+                        SizeUnit = "|GB";
+                    } else {
+                        FileSize = (totalsize / 1099511627776).toFixed(2);
+                        SizeUnit = "|TB";
+                    }
+
+                    document.getElementById('TotalSizeCard').innerHTML = FileSize + SizeUnit;
 
                     console.log("  => Get Buckets: Success"); // Success
 
@@ -207,12 +232,13 @@
             let FileArray = [];
             let TempFileArray = [];
             let FileExt = "NULL";
+            let colors;
 
             while (i < BucketIDArray.length) {
-                storage.listFiles(BucketIDArray[i]).then(function (response) {
+                storage.listFiles(BucketIDArray[i], [Query.orderDesc("sizeOriginal")]).then(function (response) {
                     FileArray = response.files;
-                    //console.log(TempFileArray + " | " + BucketIDArray[i])
-                    //FileArray.push(TempFileArray);
+                    TempFileArray = TempFileArray.concat(response.files); // Just for Debugging (not used)
+                    //console.log(TempFileArray);
 
                     console.log("  => Get LargeFiles: Success"); // Success
 
@@ -222,44 +248,100 @@
                         let FileSize = 0;
                         let SizeUnit = "NULL";
 
-                        if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 0) {
-                            FileSize = (FileArray[x].sizeOriginal / 1000000) * 1000;
+                        if (FileArray[x].sizeOriginal < 1024) {
+                            FileSize = FileArray[x].sizeOriginal;
+                            SizeUnit = "|B";
+                        } else if (FileArray[x].sizeOriginal < 1048576) {
+                            FileSize = (FileArray[x].sizeOriginal / 1024).toFixed(2);
                             SizeUnit = "|KB";
-                        }
-                        else if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 1) {
-                            FileSize = (FileArray[x].sizeOriginal / 1000000);
+                        } else if (FileArray[x].sizeOriginal < 1073741824) {
+                            FileSize = (FileArray[x].sizeOriginal / 1048576).toFixed(2);
                             SizeUnit = "|MB";
+                        } else if (FileArray[x].sizeOriginal < 1099511627776) {
+                            FileSize = (FileArray[x].sizeOriginal / 1073741824).toFixed(2);
+                            SizeUnit = "|GB";
+                        } else {
+                            FileSize = (FileArray[x].sizeOriginal / 1099511627776).toFixed(2);
+                            SizeUnit = "|TB";
                         }
 
 
-                        let extensions = ['exe', 'png', 'pdf', 'txt'];
+                        let extensions = ['zip', 'mov', 'ppt', 'mp3', 'doc', 'png', 'txt', 'mp4', 'exe', 'avi', 'jar', 'xls', 'xci', 'rar', 'pdf', 'docx', 'pptx', 'xlsx', 'psd', 'svg', 'eps', 'indd', 'dwg', 'dxf', 'csv', 'xml', 'json', 'html', 'css', 'js', 'php', 'cpp', 'java', 'py', 'md', 'sql', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'tiff', 'bat', 'bin', 'bak', 'class', 'dll', 'dmg', 'iso', 'tar', 'ttf', 'woff', 'eot', 'log', 'rtf', 'wav', 'wmv', 'flv', 'swf', 'mkv', 'midi', '3gp', 'm4a', 'flac', 'aac', 'ogg', 'wma', '7z', 'deb', 'pkg', 'rpm', 'sh', 'bash', 'cs', 'go', 'pl', 'swift', 'vb', 'xhtml', 'rss', 'yaml', 'ini', 'cfg', 'reg', 'inf', 'hpp', 'hxx', 'kts', 'scala', 'groovy', 'gradle', 'cljs', 'edn', 'lua', 'rmd', 'dart', 'pas', 'f90', 'f95', 'f03', 'f08', 'asm', 'rs', 'hs', 'lhs', 'lisp', 'cl', 'jl', 'sas', 'st', 'scm', 'ss', 'rkt', 'tcl', 'vh', 'svh', 'ucf', 'qsf', 'jsf', 'bsv', 'sby', 'il', 'fsx', 'fsi', 'fsproj', 'mli', 'cmx', 'cmi', 'cmo', 'cmxa', 'cma', 'cmxs', 'cc', 'cpp', 'cxx', 'c++', 'hh', 'hpp', 'hxx', 'h++', 'tcc', 'txx'];
+                        //done = [];
+
                         for (let j = 0; j < extensions.length; j++) {
-
-                            if (FileName.includes("." + extensions[j])) {
-
-                                if (!done.includes("." + extensions[j])) {
-                                    FileExtArray.push(0); // add a new index with the value of 0
-                                    done.push("." + extensions[j]);
-                                    FileExtArray[j] = FileExtArray[j] + 1;
-                                    FileExt = extensions[j];
-                                    console.log("New Ext")
-
+                            let extension = extensions[j];
+                            if (FileName.includes("." + extension)) {
+                                let index = done.indexOf("." + extension);
+                                if (index === -1) { // extension not found in done array
+                                    FileExtArray.push(1); // add a new index with the value of 1
+                                    done.push("." + extension);
+                                    FileExt = extension;
+                                    console.log("New Ext");
+                                } else { // extension found in done array
+                                    FileExtArray[index] = FileExtArray[index] + 1;
+                                    FileExt = extension;
                                 }
-                                else if (done.includes("." + extensions[j])) {
-                                    FileExtArray[j] = FileExtArray[j] + 1;
-                                    FileExt = extensions[j];
-                                    break;
-                                }
-                                //console.log(done)
-                                //console.log(FileExtArray)
                             }
-
                         }
+
+
+                        let sortedIndices = FileExtArray.map((item, index) => index).sort((a, b) => FileExtArray[b] - FileExtArray[a]);
+                        FileExtArray = sortedIndices.map(index => FileExtArray[index]);
+                        done = sortedIndices.map(index => done[index]);
+
+                        // Generate a unique color for each extension
+                        colors = ['#6ab04c', '#2980b9', '#f39c12', '#d35400', '#8e44ad', '#2c3e50', '#f1c40f', '#e67e22', '#e74c3c', '#ecf0f1', '#95a5a6', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f39c12', '#d35400', '#c0392b', '#bdc3c7', '#7f8c8d'];
+
+                        // Shuffle the colors array
+                        for (let i = colors.length - 1; i > 0; i--) {
+                            let j = Math.floor(Math.random() * (i + 1));
+                            [colors[i], colors[j]] = [colors[j], colors[i]]; // swap
+                        }
+
+
+
+
                         //MakeExtChart();
 
-
+                        //sort here
                         if (y < 5) {
-                            document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
+                            document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize + SizeUnit + '</div> </div> </li>');
+                            let listItems = document.querySelectorAll('.LargeFile-list-item');
+                            let itemsArray = [];
+                            for (let i = 0; i < listItems.length; i++) {
+                                itemsArray.push(listItems[i]);
+                            }
+                            itemsArray.sort(function (a, b) {
+                                let aSize = parseFloat(a.querySelector('.LargeFile-size').textContent);
+                                let bSize = parseFloat(b.querySelector('.LargeFile-size').textContent);
+                                let aSizeUnit = a.querySelector('.LargeFile-size').textContent.split('|')[1];
+                                let bSizeUnit = b.querySelector('.LargeFile-size').textContent.split('|')[1];
+                                if (aSizeUnit === 'GB' && bSizeUnit !== 'GB') {
+                                    return -1;
+                                }
+                                if (aSizeUnit === 'MB' && bSizeUnit === 'KB') {
+                                    return -1;
+                                }
+                                if (aSizeUnit === 'MB' && bSizeUnit === 'GB') {
+                                    return 1;
+                                }
+                                if (aSizeUnit === 'KB' && bSizeUnit === 'B') {
+                                    return -1;
+                                }
+                                if (aSizeUnit === 'KB' && bSizeUnit === 'MB') {
+                                    return 1;
+                                }
+                                if (aSizeUnit === 'B' && bSizeUnit !== 'B') {
+                                    return 1;
+                                }
+                                return bSize - aSize;
+                            });
+                            let ul = document.querySelector('#LargeFiles');
+                            ul.innerHTML = '';
+                            for (let i = 0; i < itemsArray.length; i++) {
+                                ul.appendChild(itemsArray[i]);
+                            }
                         }
                         y = y + 1;
                         x = x + 1;
@@ -274,43 +356,47 @@
                 i = i + 1;
 
             }
+
             setTimeout(() => {
-                MakeExtChart();
+                MakeExtChart(colors);
             }, 1000);
 
 
         }
 
-        function MakeExtChart() {
+        function MakeExtChart(colors) {
 
 
             let extension_options = {
                 series: FileExtArray,
                 labels: done,
                 chart: {
-                    height: 350,
+                    
                     type: 'donut',
-                    width: 340,
+                    
                 },
                 dataLabels: {
                     enabled: true,
-
                 },
-                colors: ['#6ab04c', '#2980b9', '#f39c12', '#d35400']
+                colors: colors,
+
             }
 
-            let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
+
             try {
                 let i = 0;
                 let Valid = false;
                 let count = 0;
                 while (i < FileExtArray.length) {
-                    if (isNaN(FileExtArray[i]) == true) {
+                    if (isNaN(FileExtArray[i]) == true | FileExtArray[i] == null | FileExtArray[i] == undefined) {
                         Valid = false;
                         console.log("Not Valid")
+                        console.log("Invalid | " + FileExtArray[i]);
+                        throw new console.error("Invalid Data");
                         break;
                     } else {
                         Valid = true;
+                        console.log("Number | " + FileExtArray[i]);
                         count = count + 1;
                         i = i + 1;
                     }
@@ -318,15 +404,24 @@
 
                 if (count == FileExtArray.length) {
                     console.log("Valid")
+                    let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options);
                     extension_chart.render()
                     console.log(FileExtArray)
                     console.log(done)
                 } else {
-                    ListBuckets();
+                    console.log("Count | " + count + " | " + FileExtArray[i]);
+                    throw new console.error("Invalid Data");
                 }
             } catch (error) {
                 console.log("Caught Error")
-                ListBuckets();
+                FileExtArray = [];
+                done = [];
+                BucketIDArray = [];
+                FileArray = [];
+
+                setTimeout(() => {
+                    ListBuckets();
+                }, 1000);
             }
 
 
@@ -483,12 +578,21 @@
             }, 1000);
         }
 
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
         function MakeReqChart() {
             let request_options = {
                 series: [{
                     data: ActionLogArray,
                 }],
-                colors: ['#6ab04c'],
+                colors: [getRandomColor()],
 
                 chart: {
                     height: 350,
@@ -747,7 +851,7 @@
                     <!-- USAGE CHART -->
                     <div class="box f-height">
                         <div class="box-header">
-                            API Requests
+                            Actions
                         </div>
                         <div class="box-body">
                             <div id="request-chart"></div>
