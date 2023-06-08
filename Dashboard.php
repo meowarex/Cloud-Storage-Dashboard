@@ -186,13 +186,15 @@
 
                 i = i + 1;
             }
-            console.log("List | " + BucketIDArray)
-            //GetFiles(); //Should be uncommented when completing below TODO:
+            //console.log("List | " + BucketIDArray)
+
+            GetFiles(); //Should be uncommented when completing below TODO:
+
         }
 
         //TODO: Compile all files in all buckets into One array and then pouplate the pie chart and Large File list.
 
-        /*function GetFiles() {
+        function GetFiles() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
                 .setProject('64511dda13070874dfb6'); // Your project ID
@@ -200,19 +202,69 @@
             const storage = new Storage(client);
             let i = 0;
             let y = 0;
-            let x = 0;
+
             document.getElementById('LargeFiles').innerHTML = '';
             let FileArray = [];
             let TempFileArray = [];
+            let FileExt = "NULL";
 
             while (i < BucketIDArray.length) {
                 storage.listFiles(BucketIDArray[i]).then(function (response) {
-                    TempFileArray = response.files;
-                    console.log(TempFileArray + " | " + BucketIDArray[i])
-                    FileArray.push(TempFileArray);
+                    FileArray = response.files;
+                    //console.log(TempFileArray + " | " + BucketIDArray[i])
+                    //FileArray.push(TempFileArray);
 
                     console.log("  => Get LargeFiles: Success"); // Success
 
+                    let x = 0;
+                    while (x < FileArray.length) {
+                        let FileName = FileArray[x].name;
+                        let FileSize = 0;
+                        let SizeUnit = "NULL";
+
+                        if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 0) {
+                            FileSize = (FileArray[x].sizeOriginal / 1000000) * 1000;
+                            SizeUnit = "|KB";
+                        }
+                        else if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 1) {
+                            FileSize = (FileArray[x].sizeOriginal / 1000000);
+                            SizeUnit = "|MB";
+                        }
+
+
+                        let extensions = ['exe', 'png', 'pdf', 'txt'];
+                        for (let j = 0; j < extensions.length; j++) {
+
+                            if (FileName.includes("." + extensions[j])) {
+
+                                if (!done.includes("." + extensions[j])) {
+                                    FileExtArray.push(0); // add a new index with the value of 0
+                                    done.push("." + extensions[j]);
+                                    FileExtArray[j] = FileExtArray[j] + 1;
+                                    FileExt = extensions[j];
+                                    console.log("New Ext")
+
+                                }
+                                else if (done.includes("." + extensions[j])) {
+                                    FileExtArray[j] = FileExtArray[j] + 1;
+                                    FileExt = extensions[j];
+                                    break;
+                                }
+                                //console.log(done)
+                                //console.log(FileExtArray)
+                            }
+
+                        }
+                        //MakeExtChart();
+
+
+                        if (y < 5) {
+                            document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
+                        }
+                        y = y + 1;
+                        x = x + 1;
+
+                    }
 
 
                 }, function (error) {
@@ -220,65 +272,18 @@
                 });
 
                 i = i + 1;
-                x = x + 1;
+
             }
-            
-
-            while (x < FileArray.length) {
-                let FileName = FileArray[x].name;
-                let FileSize = 0;
-                let FileExt = "NULL";
-                let SizeUnit = "NULL";
-
-                if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 0) {
-                    FileSize = (FileArray[x].sizeOriginal / 1000000) * 1000;
-                    SizeUnit = "|KB";
-                }
-                else if (Math.trunc(FileArray[x].sizeOriginal / 1000000) === 1) {
-                    FileSize = (FileArray[x].sizeOriginal / 1000000);
-                    SizeUnit = "|MB";
-                }
+            setTimeout(() => {
+                MakeExtChart();
+            }, 1000);
 
 
-                setTimeout(() => {
-
-
-                    let extensions = ['exe', 'png', 'pdf', 'txt'];
-                    for (let j = 0; j < extensions.length; j++) {
-
-                        if (FileName.includes("." + extensions[j])) {
-
-                            if (!done.includes("." + extensions[j])) {
-                                FileExtArray.push(0); // add a new index with the value of 0
-                                done.push("." + extensions[j]);
-                                FileExtArray[j] = FileExtArray[j] + 1;
-                                FileExt = extensions[j];
-                                console.log("New Ext")
-
-                            }
-                            else if (done.includes("." + extensions[j])) {
-                                FileExtArray[j] = FileExtArray[j] + 1;
-                                FileExt = extensions[j];
-                                break;
-                            }
-                            console.log(done)
-                            console.log(FileExtArray)
-                        }
-
-                    }
-                    MakeExtChart();
-                }, 500);
-
-                if (y < 6) {
-                    document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize.toFixed(2) + SizeUnit + '</div> </div> </li>');
-                }
-                y = y + 1;
-                x = x + 1;
-            }
-
-        }*/
+        }
 
         function MakeExtChart() {
+
+
             let extension_options = {
                 series: FileExtArray,
                 labels: done,
@@ -295,7 +300,34 @@
             }
 
             let extension_chart = new ApexCharts(document.querySelector("#extension-chart"), extension_options)
-            extension_chart.render()
+            try {
+                let i = 0;
+                let Valid = false;
+                let count = 0;
+                while (i < FileExtArray.length) {
+                    if (isNaN(FileExtArray[i]) == true) {
+                        Valid = false;
+                        console.log("Not Valid")
+                        break;
+                    } else {
+                        Valid = true;
+                        count = count + 1;
+                        i = i + 1;
+                    }
+                }
+
+                if (count == FileExtArray.length) {
+                    console.log("Valid")
+                    extension_chart.render()
+                    console.log(FileExtArray)
+                    console.log(done)
+                } else {
+                    ListBuckets();
+                }
+            } catch (error) {
+                console.log("Caught Error")
+                ListBuckets();
+            }
 
 
         }
