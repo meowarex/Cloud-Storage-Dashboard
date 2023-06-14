@@ -103,11 +103,14 @@
                 console.log("[!] => START <= [!]");
 
                 console.log("  => Get CheckAuth: Success"); // Success
-
+                console.log(response);
                 GetUserName();
-                ListBuckets();
-                GetActions();
-                LoopRequests();
+
+                setTimeout(function () {
+                    ListBuckets();
+                    GetActions();
+                    LoopRequests();
+                }, 1000);
 
             }, function (error) {
                 console.log(error); // Failure
@@ -116,17 +119,18 @@
             });
         }
 
+
+        let AccessLevel = "";
         function GetUserName() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
                 .setProject('64511dda13070874dfb6');               // Your project ID
 
             const account = new Account(client);
-
             const promise = account.getSession('current');
 
             promise.then(function (response) {
-                document.getElementById('UserName').innerHTML = response.providerUid;
+                document.getElementById('UserName').innerHTML = response.providerUid.split("@")[0];
                 console.log("  => Get UserName: Success"); // Success
 
 
@@ -137,6 +141,18 @@
             }, function (error) {
                 console.log("  => Get UserName: FAILED -> | " + error); // Failure
                 console.log("  => Get TotalUsers: FAILED -> | " + error); // Failure
+            });
+
+            const promise2 = account.getPrefs();
+
+            promise2.then(function (response) {
+                console.log("  => Get UserPrefs: Success"); // Success
+                console.log(response.Access);
+
+                AccessLevel = response.Access;
+
+            }, function (error) {
+                console.log("  => Get UserPrefs: FAILED -> | " + error); // Failure
             });
         }
 
@@ -267,7 +283,6 @@
 
 
                         let extensions = ['zip', 'mov', 'ppt', 'mp3', 'doc', 'png', 'txt', 'mp4', 'exe', 'avi', 'jar', 'xls', 'xci', 'rar', 'pdf', 'docx', 'pptx', 'xlsx', 'psd', 'svg', 'eps', 'indd', 'dwg', 'dxf', 'csv', 'xml', 'json', 'html', 'css', 'js', 'php', 'cpp', 'java', 'py', 'md', 'sql', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'tiff', 'bat', 'bin', 'bak', 'class', 'dll', 'dmg', 'iso', 'tar', 'ttf', 'woff', 'eot', 'log', 'rtf', 'wav', 'wmv', 'flv', 'swf', 'mkv', 'midi', '3gp', 'm4a', 'flac', 'aac', 'ogg', 'wma', '7z', 'deb', 'pkg', 'rpm', 'sh', 'bash', 'cs', 'go', 'pl', 'swift', 'vb', 'xhtml', 'rss', 'yaml', 'ini', 'cfg', 'reg', 'inf', 'hpp', 'hxx', 'kts', 'scala', 'groovy', 'gradle', 'cljs', 'edn', 'lua', 'rmd', 'dart', 'pas', 'f90', 'f95', 'f03', 'f08', 'asm', 'rs', 'hs', 'lhs', 'lisp', 'cl', 'jl', 'sas', 'st', 'scm', 'ss', 'rkt', 'tcl', 'vh', 'svh', 'ucf', 'qsf', 'jsf', 'bsv', 'sby', 'il', 'fsx', 'fsi', 'fsproj', 'mli', 'cmx', 'cmi', 'cmo', 'cmxa', 'cma', 'cmxs', 'cc', 'cpp', 'cxx', 'c++', 'hh', 'hpp', 'hxx', 'h++', 'tcc', 'txx'];
-                        //done = [];
 
                         for (let j = 0; j < extensions.length; j++) {
                             let extension = extensions[j];
@@ -300,11 +315,6 @@
                         }
 
 
-
-
-                        //MakeExtChart();
-
-                        //sort here
                         if (y < 5) {
                             document.getElementById('LargeFiles').insertAdjacentHTML('beforeend', '<li class="LargeFile-list-item"> <div class="item-info"> <div class="item-name"> <div class="LargeFile-name">' + FileName + '</div> <div class="text-second">' + FileExt + '</div> </div> </div> <div class="item-sale-info"> <div class="text-second">size</div> <div class="LargeFile-size">' + FileSize + SizeUnit + '</div> </div> </li>');
                             let listItems = document.querySelectorAll('.LargeFile-list-item');
@@ -371,9 +381,9 @@
                 series: FileExtArray,
                 labels: done,
                 chart: {
-                    
+
                     type: 'donut',
-                    
+                    expandOnClick: true,
                 },
                 dataLabels: {
                     enabled: true,
@@ -427,7 +437,7 @@
 
         }
 
-        let ActionCount = 'NULL';
+        let Resp = [];
 
         function GetActions() {
             const client = new Client()
@@ -437,20 +447,28 @@
 
             const databases = new Databases(client);
 
+            let AccessOverride = AccessLevel;
+            if (AccessLevel == 0) {
+                AccessOverride = "2";
+            }
+
             const promise = databases.listDocuments(
                 'Dashboard',
                 'ActionLog',
                 [
-                    Query.select(['File', 'User', 'Date', 'Action', 'Response', 'Source']),
+                    Query.equal('Access', [AccessLevel, AccessOverride]),
+                    //Query.select(['File', 'User', 'Date', 'Action', 'Response', 'Source']),
                     Query.orderDesc("$createdAt")
                 ]
             ).then(function (response) {
                 let i = 0;
                 let ActionArray = response.documents;
-                ActionCount = ActionArray.length;
+                let Resp = response;
+
 
                 document.getElementById('ActionsTable').innerHTML = '';
                 while (i <= ActionArray.length - 1 && i < 10) {
+                    console.log(document.getElementById('UserName').innerHTML + ' | ' + ActionArray[i].User);
                     let File = ActionArray[i].File;
                     let User = ActionArray[i].User;
                     let Date = ActionArray[i].Date;
@@ -485,9 +503,9 @@
                     i = i + 1
                 }
 
-                document.getElementById('TotalActionsCard').innerHTML = ActionCount;
+                document.getElementById('TotalActionsCard').innerHTML = Resp.total;
                 console.log("  => Get Actions: Success"); // Success
-
+                console.log(Resp);
 
             }, function (error) {
                 console.log("  => Get Actions: FAILED -> | " + error);
@@ -522,6 +540,11 @@
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
                 .setProject('64511dda13070874dfb6'); // Your project ID
 
+            let AccessOverride = AccessLevel;
+            if (AccessLevel == 0) {
+                AccessOverride = "2";
+            }
+
             const databases = await new Databases(client);
 
             var today = new Date();
@@ -540,7 +563,8 @@
                 'Dashboard',
                 'ActionLog',
                 [
-                    Query.equal('Date', [isoDate])
+                    Query.equal('Date', [isoDate]),
+                    Query.equal('Access', [AccessLevel, AccessOverride])
                 ]);
 
             setTimeout(() => {
@@ -592,11 +616,12 @@
                 series: [{
                     data: ActionLogArray,
                 }],
-                colors: [getRandomColor()],
+                colors: ['#f00690'],
 
                 chart: {
                     height: 350,
                     type: 'area',
+
                 },
                 dataLabels: {
                     enabled: false

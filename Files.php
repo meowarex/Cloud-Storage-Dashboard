@@ -103,9 +103,11 @@
                 console.log("  => Get CheckAuth: Success"); // Success
 
                 GetUserName();
-                ListBuckets();
-                GetActions();
 
+                setTimeout(function () {
+                    ListBuckets();
+                    GetActions();
+                }, 1000);
 
             }, function (error) {
                 console.log(error); // Failure
@@ -114,6 +116,8 @@
             });
         }
 
+        let CurrentUser = "";
+        let AccessLevel = "";
         function GetUserName() {
             const client = new Client()
                 .setEndpoint('http://51.161.212.158:9191/v1') // Your API Endpoint
@@ -124,7 +128,8 @@
             const promise = account.getSession('current');
 
             promise.then(function (response) {
-                document.getElementById('UserName').innerHTML = response.providerUid;
+                document.getElementById('UserName').innerHTML = response.providerUid.split("@")[0];
+                CurrentUser = response.providerUid;
                 console.log("  => Get UserName: Success"); // Success
 
 
@@ -135,6 +140,18 @@
             }, function (error) {
                 console.log("  => Get UserName: FAILED -> | " + error); // Failure
                 console.log("  => Get TotalUsers: FAILED -> | " + error); // Failure
+            });
+
+            const promise2 = account.getPrefs();
+
+            promise2.then(function (response) {
+                console.log("  => Get UserPrefs: Success"); // Success
+                console.log(response.Access);
+
+                AccessLevel = response.Access;
+
+            }, function (error) {
+                console.log("  => Get UserPrefs: FAILED -> | " + error); // Failure
             });
         }
 
@@ -499,11 +516,12 @@
                 const Apromise = databases.createDocument('Dashboard', 'ActionLog', ID.unique(),
                     {
                         "File": FileName,
-                        "User": document.getElementById('UserName').innerHTML,
+                        "User": CurrentUser,
                         "Date": iDate,
                         "Action": Action,
                         "Response": Response,
                         "Source": Source,
+                        "Access": AccessLevel,
                     }
                 );
 
